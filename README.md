@@ -1,5 +1,4 @@
-![Bailiff](banner.png)
-# Bailiff - Mock Trial Timer (WIP)
+# Bailiff - Mock Trial Timer
 
 Bailiff is a streamlined sequence management tool for mock trial timekeepers. Originally built for use at VLRE (Virginia Law Related Education) competitions, but it is flexible enough for any trial format. 
 
@@ -9,7 +8,6 @@ Bailiff is a streamlined sequence management tool for mock trial timekeepers. Or
 * **Pre-Trial Lock:** Structure is locked once the trial begins to prevent accidental deletions or reordering during high-pressure rounds.
 * **Rapid Time Entry:** 4-digit auto-formatting (typing '0500' creates '05:00').
 * **Segment Linking:** Pair Direct and Cross-Examination blocks to enable smart time compensation.
-* **High-Visibility UI:** High-contrast dark mode designed for legibility in a courtroom.
 * **One-Tap Timers:** Individual countdowns for every segment.
 * **Easy Time Controls:** Buttons to add, set, and remove any amount of time.
 * **Advanced Objection Mode:** If enabled, when an objection occurs, the timekeeper chooses how time is recorded:

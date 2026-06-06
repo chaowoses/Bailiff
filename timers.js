@@ -1,21 +1,46 @@
 // Get data from URL params or use defaults
 const urlParams = new URLSearchParams(window.location.search);
-const leftTeamName = urlParams.get('leftTeam') || 'Plaintiff';
-const rightTeamName = urlParams.get('rightTeam') || 'Defense';
-const advancedMode = urlParams.get('advanced') === 'true';
+const resumeId = urlParams.get('resume');
 
-// Parse block templates
-let blockTemplates = [];
-try {
-    blockTemplates = JSON.parse(decodeURIComponent(urlParams.get('blocks') || '[]'));
-} catch (e) {
-    blockTemplates = [
-        { id: 1, name: "Opening Statement", time: "05:00", linked: null },
-        { id: 2, name: "Direct Examination", time: "25:00", linked: 3 },
-        { id: 3, name: "Cross Examination", time: "20:00", linked: 2 },
-        { id: 4, name: "Closing Argument", time: "05:00", linked: null }
-    ];
+let leftTeamName, rightTeamName, advancedMode, blockTemplates, resumeBlocks;
+let resumeState = null;
+
+if (resumeId) {
+    try {
+        const cacheKey = resumeId === 'autosave' ? 'bailiff_autosave' : 'bailiff_resume';
+        resumeState = JSON.parse(localStorage.getItem(cacheKey));
+        localStorage.removeItem(cacheKey);
+        leftTeamName = resumeState.plaintiff || 'Plaintiff';
+        rightTeamName = resumeState.defense || 'Defense';
+        advancedMode = resumeState.advancedMode === true;
+        blockTemplates = resumeState.blocks;
+        resumeBlocks = resumeState.timerState ? resumeState.timerState.blocks : null;
+    } catch (e) {
+        resumeState = null;
+    }
 }
+
+if (!resumeState) {
+    leftTeamName = urlParams.get('leftTeam') || 'Plaintiff';
+    rightTeamName = urlParams.get('rightTeam') || 'Defense';
+    advancedMode = urlParams.get('advanced') === 'true';
+
+    try {
+        blockTemplates = JSON.parse(decodeURIComponent(urlParams.get('blocks') || '[]'));
+    } catch (e) {
+        blockTemplates = [
+            { id: 1, name: "Opening Statement", time: "05:00", linked: null },
+            { id: 2, name: "Direct Examination", time: "25:00", linked: 3 },
+            { id: 3, name: "Cross Examination", time: "20:00", linked: 2 },
+            { id: 4, name: "Closing Argument", time: "05:00", linked: null }
+        ];
+    }
+    resumeBlocks = null;
+}
+
+// Generate a session ID so saves overwrite within the same session
+// (use the resumed trial's sessionId so re-saves update the same entry)
+const sessionId = (resumeState && resumeState.sessionId) || 'session-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
 
 // Create blocks for both teams
 let blocks = {
@@ -23,13 +48,21 @@ let blocks = {
     right: blockTemplates.map(t => ({ ...t, team: 'right', remainingSeconds: null }))
 };
 
+// Restore saved timer progress if resuming
+if (resumeBlocks) {
+    blocks = {
+        left: resumeBlocks.left.map(b => ({ ...b })),
+        right: resumeBlocks.right.map(b => ({ ...b }))
+    };
+}
+
 function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
 }
 
-const ICON_LINK = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="link-svg"><line x1="12" y1="3" x2="12" y2="21"/><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="7" x2="6" y2="13"/><line x1="20" y1="7" x2="18" y2="13"/><path d="M2 13a4 4 0 0 0 8 0"/><path d="M14 13a4 4 0 0 0 8 0"/></svg>`;
+const ICON_LINK = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="link-svg"><path d="M7 20l10 0"/><path d="M6 6l6 -1l6 1"/><path d="M12 3l0 17"/><path d="M9 12l-3 -6l-3 6a3 3 0 0 0 6 0"/><path d="M21 12l-3 -6l-3 6a3 3 0 0 0 6 0"/></svg>`;
 
 let currentBlockId = null;
 let currentTeam = null;
@@ -66,6 +99,8 @@ const clearCustomBtn = document.getElementById('clear-custom-btn');
 // Set team names
 document.getElementById('left-team-name').textContent = leftTeamName;
 document.getElementById('right-team-name').textContent = rightTeamName;
+
+
 
 function parseTime(timeStr) {
     const [mins, secs] = timeStr.split(':').map(Number);
@@ -182,7 +217,7 @@ function loadBlock() {
     
     startBtn.style.display = 'inline-block';
     startBtn.textContent = 'Start';
-    startBtn.className = 'control-btn btn-start';
+    startBtn.className = 'bench-btn bench-btn-primary';
     stopBtn.style.display = 'none';
     
     const currentIndex = blocks[currentTeam].findIndex(b => b.id === currentBlockId);
@@ -200,10 +235,11 @@ function startTimer() {
     isPaused = false;
     isStopped = false;
     startBtn.textContent = 'Pause';
-    startBtn.className = 'control-btn btn-pause';
+    startBtn.className = 'bench-btn bench-btn-warn';
     stopBtn.style.display = 'inline-block';
     timeLabel.textContent = 'Time Remaining';
     updateCountdownColor();
+    startAutosave();
     
     timerInterval = setInterval(() => {
         timeRemaining--;
@@ -247,11 +283,11 @@ function showPauseButtons() {
     const existingPauseButtons = document.querySelectorAll('.pause-btn');
     existingPauseButtons.forEach(btn => btn.remove());
     
-    const mainControls = document.querySelector('.main-controls');
+    const mainControls = document.querySelector('.bench-main-controls');
     
     if (advancedMode) {
         const deductBtn = document.createElement('button');
-        deductBtn.className = 'control-btn btn-deduct pause-btn';
+        deductBtn.className = 'bench-btn bench-btn-danger pause-btn';
         deductBtn.textContent = 'Sustain Objection (Deduct from Time)';
         deductBtn.addEventListener('click', resumeWithDeduction);
         mainControls.appendChild(deductBtn);
@@ -262,7 +298,7 @@ function showPauseButtons() {
             const linkedBlock = blocks[oppositeTeam].find(b => b.id === block.linked);
             if (linkedBlock) {
                 const deductLinkedBtn = document.createElement('button');
-                deductLinkedBtn.className = 'control-btn btn-deduct-linked pause-btn';
+                deductLinkedBtn.className = 'bench-btn bench-btn-danger pause-btn';
                 deductLinkedBtn.textContent = `Overrule Objection (Deduct from ${linkedBlock.name})`;
                 deductLinkedBtn.addEventListener('click', resumeWithLinkedDeduction);
                 mainControls.appendChild(deductLinkedBtn);
@@ -271,7 +307,7 @@ function showPauseButtons() {
     }
     
     const discardBtn = document.createElement('button');
-    discardBtn.className = 'control-btn btn-discard pause-btn';
+    discardBtn.className = 'bench-btn bench-btn-secondary pause-btn';
     discardBtn.textContent = 'Resume';
     discardBtn.addEventListener('click', resumeWithoutDeduction);
     mainControls.appendChild(discardBtn);
@@ -347,7 +383,7 @@ function stopTimerButton() {
     secondaryTimer.classList.remove('visible');
     
     startBtn.textContent = 'Restart';
-    startBtn.className = 'control-btn btn-restart';
+    startBtn.className = 'bench-btn bench-btn-primary';
     startBtn.style.display = 'inline-block';
     stopBtn.style.display = 'none';
 }
@@ -358,6 +394,7 @@ function fullStop() {
     isRunning = false;
     isPaused = false;
     isStopped = false;
+    stopAutosave();
     
     const pauseButtons = document.querySelectorAll('.pause-btn');
     pauseButtons.forEach(btn => btn.remove());
@@ -490,5 +527,111 @@ if (blockTemplates.length === 0) {
     };
 }
 
-// Initialize with first block of left team
-selectBlock(blocks.left[0].id, 'left');
+// Confirmation dialog for Return to Lobby
+const confirmOverlay = document.getElementById('confirm-overlay');
+document.querySelector('.bench-lobby-link').addEventListener('click', (e) => {
+    e.preventDefault();
+    const descInput = document.getElementById('save-desc-input');
+    if (descInput && resumeState && resumeState.description) {
+        descInput.value = resumeState.description;
+    }
+    confirmOverlay.classList.remove('hidden');
+    setTimeout(() => { if (descInput) descInput.focus(); }, 100);
+});
+
+document.getElementById('confirm-cancel').addEventListener('click', () => {
+    confirmOverlay.classList.add('hidden');
+});
+
+document.getElementById('save-desc-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('confirm-save-exit').click();
+    }
+});
+
+document.getElementById('confirm-save-exit').addEventListener('click', () => {
+    let trials = JSON.parse(localStorage.getItem('bailiff_saved_trials')) || [];
+    // Match by sessionId first (same session), then by id (re-launched trial)
+    const existingIdx = trials.findIndex(t =>
+        t.sessionId === sessionId ||
+        (t.id && resumeState && t.id === resumeState.id)
+    );
+    const descInput = document.getElementById('save-desc-input');
+    const trial = {
+        sessionId: sessionId,
+        id: existingIdx !== -1 ? trials[existingIdx].id : 'trial-' + Date.now(),
+        name: leftTeamName + ' v. ' + rightTeamName,
+        savedAt: new Date().toISOString(),
+        plaintiff: leftTeamName,
+        defense: rightTeamName,
+        advancedMode: advancedMode,
+        description: descInput ? descInput.value.trim() : '',
+        blocks: blockTemplates,
+        timerState: {
+            blocks: blocks,
+            currentBlockId: currentBlockId,
+            currentTeam: currentTeam
+        }
+    };
+    if (existingIdx !== -1) {
+        trials[existingIdx] = trial;
+    } else {
+        trials.unshift(trial);
+    }
+    localStorage.setItem('bailiff_saved_trials', JSON.stringify(trials));
+    localStorage.removeItem('bailiff_autosave');
+    window.location.href = 'index.html';
+});
+
+confirmOverlay.addEventListener('click', (e) => {
+    if (e.target === confirmOverlay) {
+        confirmOverlay.classList.add('hidden');
+    }
+});
+
+// Autosave — periodically save progress
+const AUTOSAVE_INTERVAL = 30000;
+let autosaveTimer = null;
+
+function startAutosave() {
+    stopAutosave();
+    autosaveTimer = setInterval(() => {
+        if (!currentTeam || !currentBlockId) return;
+        const autosave = {
+            sessionId: sessionId,
+            id: 'autosave',
+            name: leftTeamName + ' v. ' + rightTeamName,
+            savedAt: new Date().toISOString(),
+            plaintiff: leftTeamName,
+            defense: rightTeamName,
+            advancedMode: advancedMode,
+            blocks: blockTemplates,
+            timerState: {
+                blocks: blocks,
+                currentBlockId: currentBlockId,
+                currentTeam: currentTeam
+            }
+        };
+        localStorage.setItem('bailiff_autosave', JSON.stringify(autosave));
+    }, AUTOSAVE_INTERVAL);
+}
+
+function stopAutosave() {
+    if (autosaveTimer) {
+        clearInterval(autosaveTimer);
+        autosaveTimer = null;
+    }
+}
+
+// Clear autosave on fresh start (not when resuming it)
+if (!resumeId) {
+    localStorage.removeItem('bailiff_autosave');
+}
+
+// Initialize — resume from saved block or start with first block of left team
+if (resumeState && resumeState.timerState && resumeState.timerState.currentBlockId && resumeState.timerState.currentTeam) {
+    selectBlock(resumeState.timerState.currentBlockId, resumeState.timerState.currentTeam);
+} else {
+    selectBlock(blocks.left[0].id, 'left');
+}

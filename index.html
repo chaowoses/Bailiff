@@ -16,53 +16,65 @@
 </head>
 <body>
 
-    <div class="court-bar"></div>
-
-    <header>
-        <div class="court-emblem">
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M7 20l10 0"/>
-                <path d="M6 6l6 -1l6 1"/>
-                <path d="M12 3l0 17"/>
-                <path d="M9 12l-3 -6l-3 6a3 3 0 0 0 6 0"/>
-                <path d="M21 12l-3 -6l-3 6a3 3 0 0 0 6 0"/>
-            </svg>
+    <div class="filing">
+        <div class="caption">
+            <div class="caption-seal">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M7 20l10 0"/>
+                    <path d="M6 6l6 -1l6 1"/>
+                    <path d="M12 3l0 17"/>
+                    <path d="M9 12l-3 -6l-3 6a3 3 0 0 0 6 0"/>
+                    <path d="M21 12l-3 -6l-3 6a3 3 0 0 0 6 0"/>
+                </svg>
+            </div>
+            <h1 class="caption-title">In the Circuit Court of Morgan County</h1>
+            <p class="caption-sub">Bailiff — Mock Trial Timer</p>
+            <div class="caption-byline">
+                Created by <span>Josh Felder</span>
+                <a href="https://github.com/Chaos142" target="_blank">GitHub</a>
+            </div>
         </div>
-        <h1>Bailiff</h1>
-        <p class="court-subtitle">Mock Trial Timer</p>
-        <div class="byline">
-            Created by <span>Josh Felder</span>
-            <a href="https://github.com/Chaos142" target="_blank">GitHub</a>
-        </div>
-    </header>
 
-    <div class="team-row">
-        <div class="input-group">
-            <label for="p-name">Plaintiff / Prosecution</label>
-            <input type="text" id="p-name" placeholder="e.g. Brown">
-        </div>
-        <div class="vs">vs.</div>
-        <div class="input-group">
-            <label for="d-name">Defense</label>
-            <input type="text" id="d-name" placeholder="e.g. Board of Education">
-        </div>
-    </div>
+        <div class="section-divider"></div>
 
-    <div class="toggle-container">
-        <label for="advanced-toggle" class="toggle-switch">
-            <input type="checkbox" id="advanced-toggle">
-            <span class="toggle-slider"></span>
-        </label>
-        <label for="advanced-toggle">Advanced Objection Mode</label>
-    </div>
+        <div class="matter">
+            <div class="matter-heading">IN THE MATTER OF:</div>
+            <div class="parties">
+                <div class="party-row">
+                    <div class="party">
+                        <label for="p-name">Plaintiff / Prosecution</label>
+                        <input type="text" id="p-name" placeholder="e.g. Brown">
+                    </div>
+                </div>
+                <div class="party-vs">vs.</div>
+                <div class="party-row">
+                    <div class="party">
+                        <label for="d-name">Defense</label>
+                        <input type="text" id="d-name" placeholder="e.g. Board of Education">
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <div class="panel-container">
-        <div class="court-panel">
-            <div class="panel-header">
-                <button id="add-block-btn">+ Add Block</button>
+        <div class="section-divider"></div>
+
+        <div class="schedule">
+            <div class="schedule-top">
+                <h2>Schedule of Proceedings</h2>
+                <div class="schedule-toggle">
+                    <label for="advanced-toggle" class="toggle-switch">
+                        <input type="checkbox" id="advanced-toggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <label for="advanced-toggle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><path d="M7 20l10 0"/><path d="M6 6l6 -1l6 1"/><path d="M12 3l0 17"/><path d="M9 12l-3 -6l-3 6a3 3 0 0 0 6 0"/><path d="M21 12l-3 -6l-3 6a3 3 0 0 0 6 0"/></svg>Advanced Objection Mode</label>
+                </div>
             </div>
 
-            <div id="block-edit-panel" class="block-edit-panel hidden">
+            <button id="add-block-btn">+ Add Block</button>
+
+            <div id="block-list" class="block-list"></div>
+
+            <div id="block-edit-panel" class="edit-panel hidden">
                 <h3>Edit Block</h3>
                 <div class="edit-fields">
                     <label>Name<input type="text" id="edit-block-name"></label>
@@ -79,14 +91,99 @@
                     <button id="cancel-edit-btn">Cancel</button>
                 </div>
             </div>
+        </div>
 
-            <div id="block-list" class="block-list"></div>
+        <div class="section-divider"></div>
+
+        <div class="commence">
+            <button id="start-trial-btn">Commence Trial</button>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <div class="saved-trials">
+            <div class="saved-trials-header">
+                <h2>Saved Trials</h2>
+            </div>
+            <div class="saved-trials-list" id="saved-trials-list">
+                <div class="saved-trials-empty">No saved trials yet.</div>
+            </div>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <div class="saved-trials">
+            <div class="saved-trials-header">
+                <h2>Presets</h2>
+                <button id="save-preset-btn">Save as Preset</button>
+            </div>
+            <div class="saved-trials-list" id="presets-list">
+                <div class="saved-trials-empty">No presets yet.</div>
+            </div>
         </div>
     </div>
 
-    <div class="start-trial-container">
-        <button id="start-trial-btn">Start Trial</button>
+    <!-- Preset Save Dialog -->
+    <div class="confirm-overlay hidden" id="preset-dialog-overlay">
+        <div class="confirm-dialog preset-dialog">
+            <h3>Save as Preset</h3>
+            <p>Save the current block configuration as a reusable preset.</p>
+            <div class="preset-dialog-fields">
+                <label>
+                    <span>Preset Name</span>
+                    <input type="text" id="preset-name-input" placeholder="e.g. Standard Trial">
+                </label>
+                <label>
+                    <span>Description (optional)</span>
+                    <textarea id="preset-desc-input" rows="2" placeholder="e.g. For 45-minute rounds with standard order"></textarea>
+                </label>
+            </div>
+            <div class="confirm-actions">
+                <button class="confirm-btn confirm-cancel" id="preset-dialog-cancel">Cancel</button>
+                <button class="confirm-btn confirm-save" id="preset-dialog-save">Save Preset</button>
+            </div>
+        </div>
     </div>
+
+    <!-- Delete Confirmation Dialog -->
+    <div class="confirm-overlay hidden" id="delete-confirm-overlay">
+        <div class="confirm-dialog">
+            <div class="confirm-seal">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 7l16 0"/><path d="M10 11l0 6"/><path d="M14 11l0 6"/><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/>
+                </svg>
+            </div>
+            <h3 id="delete-confirm-title">Delete?</h3>
+            <p id="delete-confirm-text">This cannot be undone.</p>
+            <div class="confirm-actions">
+                <button class="confirm-btn confirm-cancel" id="delete-confirm-cancel">Cancel</button>
+                <button class="confirm-btn confirm-leave" id="delete-confirm-confirm">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Description Edit Dialog -->
+    <div class="confirm-overlay hidden" id="desc-edit-overlay">
+        <div class="confirm-dialog preset-dialog">
+            <div class="confirm-seal">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/><path d="M9 11l0 4"/><path d="M13 11l0 4"/><path d="M11 13l-2 0"/>
+                </svg>
+            </div>
+            <h3>Edit Notes</h3>
+            <div class="preset-dialog-fields">
+                <label>
+                    <span>Description</span>
+                    <textarea id="desc-edit-input" rows="2" placeholder="Add notes about this trial"></textarea>
+                </label>
+            </div>
+            <div class="confirm-actions">
+                <button class="confirm-btn confirm-cancel" id="desc-edit-cancel">Cancel</button>
+                <button class="confirm-btn confirm-save" id="desc-edit-save">Save</button>
+            </div>
+        </div>
+    </div>
+
     <script src="setup.js"></script>
 </body>
 </html>
