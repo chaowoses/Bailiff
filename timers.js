@@ -4,7 +4,7 @@ const TS_SESSION_KEY = 'bailiff_timer_session';
 function saveTimerSession() {
     try {
         sessionStorage.setItem(TS_SESSION_KEY, JSON.stringify({
-            leftTeamName, rightTeamName, advancedMode, blockTemplates,
+            leftTeamName, rightTeamName, timedRulingMode, blockTemplates,
             blocks, currentBlockId, currentTeam,
             timeRemaining, originalTimeBeforePause, pauseElapsed, sessionId
         }));
@@ -37,7 +37,7 @@ if (isPageReload) {
 const urlParams = new URLSearchParams(window.location.search);
 const resumeId = urlParams.get('resume');
 
-let leftTeamName, rightTeamName, advancedMode, blockTemplates, resumeBlocks;
+let leftTeamName, rightTeamName, timedRulingMode, blockTemplates, resumeBlocks;
 let resumeState = null;
 
 if (resumeId) {
@@ -47,7 +47,7 @@ if (resumeId) {
         localStorage.removeItem(cacheKey);
         leftTeamName = resumeState.plaintiff || 'Plaintiff';
         rightTeamName = resumeState.defense || 'Defense';
-        advancedMode = resumeState.advancedMode === true;
+        timedRulingMode = resumeState.timedRulingMode === true || resumeState.advancedMode === true;
         blockTemplates = resumeState.blocks;
         resumeBlocks = resumeState.timerState ? resumeState.timerState.blocks : null;
     } catch (e) {
@@ -58,7 +58,7 @@ if (resumeId) {
 if (!resumeState) {
     leftTeamName = urlParams.get('leftTeam') || 'Plaintiff';
     rightTeamName = urlParams.get('rightTeam') || 'Defense';
-    advancedMode = urlParams.get('advanced') === 'true';
+    timedRulingMode = urlParams.get('advanced') === 'true';
 
     try {
         blockTemplates = JSON.parse(decodeURIComponent(urlParams.get('blocks') || '[]'));
@@ -95,7 +95,7 @@ if (resumeBlocks) {
 if (savedSessionData) {
     leftTeamName = savedSessionData.leftTeamName;
     rightTeamName = savedSessionData.rightTeamName;
-    advancedMode = savedSessionData.advancedMode;
+    timedRulingMode = savedSessionData.timedRulingMode || savedSessionData.advancedMode;
     blockTemplates = savedSessionData.blockTemplates;
     blocks = savedSessionData.blocks;
     sessionId = savedSessionData.sessionId;
@@ -195,7 +195,7 @@ function renderWidgets() {
             }
             
             // Highlight linked block in opposing team
-            if (advancedMode && currentBlockId && currentTeam) {
+            if (timedRulingMode && currentBlockId && currentTeam) {
                 const currentBlock = blocks[currentTeam].find(b => b.id === currentBlockId);
                 if (currentBlock && currentBlock.linked === block.id && block.team !== currentTeam) {
                     widget.classList.add('linked-highlight');
@@ -213,7 +213,7 @@ function renderWidgets() {
                 remaining = parseTime(block.time);
             }
 
-            const linkIcon = block.linked && advancedMode ? `<span class="link-icon">${ICON_LINK}</span>` : '';
+            const linkIcon = block.linked && timedRulingMode ? `<span class="link-icon">${ICON_LINK}</span>` : '';
             
             // Determine color class for sidebar timer
             let remainingClass = 'widget-remaining';
@@ -343,7 +343,7 @@ function showPauseButtons() {
     
     const mainControls = document.querySelector('.bench-main-controls');
     
-    if (advancedMode) {
+    if (timedRulingMode) {
         const deductBtn = document.createElement('button');
         deductBtn.className = 'bench-btn bench-btn-danger pause-btn';
         deductBtn.textContent = 'Sustain Objection (Deduct from Time)';
@@ -629,7 +629,7 @@ document.getElementById('confirm-save-exit').addEventListener('click', () => {
         savedAt: new Date().toISOString(),
         plaintiff: leftTeamName,
         defense: rightTeamName,
-        advancedMode: advancedMode,
+        timedRulingMode: timedRulingMode,
         description: descInput ? descInput.value.trim() : '',
         blocks: blockTemplates,
         timerState: {
@@ -670,7 +670,7 @@ function startAutosave() {
             savedAt: new Date().toISOString(),
             plaintiff: leftTeamName,
             defense: rightTeamName,
-            advancedMode: advancedMode,
+            timedRulingMode: timedRulingMode,
             blocks: blockTemplates,
             timerState: {
                 blocks: blocks,

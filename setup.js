@@ -13,7 +13,7 @@ const editLinkSelect = document.getElementById("edit-block-link");
 const linkLabel = document.getElementById("link-label");
 const saveBtn = document.getElementById("save-block-btn");
 const cancelBtn = document.getElementById("cancel-edit-btn");
-const advancedToggle = document.getElementById("advanced-toggle");
+const timedRulingToggle = document.getElementById("timed-ruling-toggle");
 const pNameInput = document.getElementById("p-name");
 const dNameInput = document.getElementById("d-name");
 let currentEditingId = null;
@@ -178,13 +178,14 @@ function escapeHtml(text) {
 const ICON_LINK = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="link-svg"><path d="M7 20l10 0"/><path d="M6 6l6 -1l6 1"/><path d="M12 3l0 17"/><path d="M9 12l-3 -6l-3 6a3 3 0 0 0 6 0"/><path d="M21 12l-3 -6l-3 6a3 3 0 0 0 6 0"/></svg>`;
 const ICON_TRASH = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7l16 0"/><path d="M10 11l0 6"/><path d="M14 11l0 6"/><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/></svg>`;
 const ICON_SCALES = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;"><path d="M7 20l10 0"/><path d="M6 6l6 -1l6 1"/><path d="M12 3l0 17"/><path d="M9 12l-3 -6l-3 6a3 3 0 0 0 6 0"/><path d="M21 12l-3 -6l-3 6a3 3 0 0 0 6 0"/></svg>`;
+const ICON_INFO = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`;
 
 function updateLinkVisibility() {
-    linkLabel.style.display = advancedToggle.checked ? 'flex' : 'none';
+    linkLabel.style.display = timedRulingToggle.checked ? 'flex' : 'none';
 }
 
-advancedToggle.addEventListener('change', () => {
-    advancedToggle.closest('.schedule-toggle').classList.toggle('schedule-toggle--active', advancedToggle.checked);
+timedRulingToggle.addEventListener('change', () => {
+    timedRulingToggle.closest('.schedule-toggle').classList.toggle('schedule-toggle--active', timedRulingToggle.checked);
     updateLinkVisibility();
     renderBlocks();
     saveSetupSession();
@@ -196,11 +197,17 @@ function createBlockElement(block, index) {
     div.dataset.id = block.id;
     div.setAttribute("draggable", "true");
 
-    const linkIndicator = (block.linked && advancedToggle.checked) ? `<span class="link-icon">${ICON_LINK}</span>` : '';
+    let badgeHtml = '';
+    if (block.linked && timedRulingToggle.checked) {
+        const linkedBlock = blocks.find(b => b.id === block.linked);
+        if (linkedBlock) {
+            badgeHtml = `<span class="block-linked-badge">${ICON_SCALES} ${escapeHtml(linkedBlock.name)}<span class="badge-info-icon">${ICON_INFO}</span></span>`;
+        }
+    }
 
     div.innerHTML = `
         <div class="block-main-content" data-index="${index + 1}">
-            <span class="block-name">${linkIndicator}${escapeHtml(block.name)}</span>
+            <span class="block-name">${escapeHtml(block.name)}${badgeHtml}</span>
             <span class="block-time">${escapeHtml(block.time)}</span>
         </div>
         <div class="block-controls">
@@ -308,6 +315,7 @@ blockList.addEventListener("click", e => {
     const card = e.target.closest(".block-card");
     if (!card || e.target.closest('#block-edit-panel') || card.classList.contains('removing')) return;
     if (card._dragActive) return;
+    if (e.target.closest('.badge-info-icon')) return;
     
     const deleteBtn = e.target.closest(".block-delete");
     if (deleteBtn) {
@@ -384,6 +392,7 @@ const VLRE_PRESET = {
     savedAt: null,
     builtin: true,
     advancedMode: false,
+    timedRulingMode: false,
     blocks: JSON.parse(JSON.stringify(DEFAULT_BLOCKS))
 };
 
@@ -420,14 +429,14 @@ function savePresetFromDialog(overwriteId) {
     const presets = getPresets();
     const desc = document.getElementById('preset-desc-input').value.trim();
 
-    const advMode = advancedToggle.checked;
+    const trMode = timedRulingToggle.checked;
 
     if (overwriteId) {
         const existing = presets.find(p => p.id === overwriteId);
         if (existing) {
             existing.name = name;
             existing.description = desc;
-            existing.advancedMode = advMode;
+            existing.advancedMode = trMode;
             existing.blocks = JSON.parse(JSON.stringify(blocks));
             existing.savedAt = new Date().toISOString();
         }
@@ -437,7 +446,7 @@ function savePresetFromDialog(overwriteId) {
             name: name,
             description: desc,
             savedAt: new Date().toISOString(),
-            advancedMode: advMode,
+            advancedMode: trMode,
             blocks: JSON.parse(JSON.stringify(blocks))
         });
     }
@@ -501,13 +510,13 @@ function loadPreset(presetId) {
     nextBlockId = blocks.length > 0 ? Math.max(...blocks.map(b => b.id), 0) + 1 : 1;
     renderBlocks();
 
-    // Restore the advanced mode toggle
-    if (preset.advancedMode) {
-        advancedToggle.checked = true;
+    // Restore the timed ruling mode toggle
+    if (preset.timedRulingMode || preset.advancedMode) {
+        timedRulingToggle.checked = true;
     } else {
-        advancedToggle.checked = false;
+        timedRulingToggle.checked = false;
     }
-    advancedToggle.dispatchEvent(new Event('change'));
+    timedRulingToggle.dispatchEvent(new Event('change'));
 }
 
 function deletePreset(presetId) {
@@ -538,19 +547,18 @@ function renderPresets() {
         const isBuiltin = p.builtin;
         const desc = p.description || '';
 
-        const advIcon = p.advancedMode ? ICON_SCALES : '';
         const infoStr = presetBlockInfo(p.blocks);
 
         const actions = isBuiltin
-            ? '<button class="saved-trial-load" data-id="' + p.id + '">' + advIcon + 'Load Preset</button>'
-            : '<button class="saved-trial-load" data-id="' + p.id + '">' + advIcon + 'Load</button>' +
+            ? '<button class="saved-trial-load" data-id="' + p.id + '">Load Preset</button>'
+            : '<button class="saved-trial-load" data-id="' + p.id + '">Load</button>' +
               '<button class="saved-trial-edit preset-edit-btn" data-id="' + p.id + '">Edit</button>' +
               '<button class="saved-trial-edit preset-overwrite-btn" data-id="' + p.id + '">Overwrite</button>' +
               '<button class="saved-trial-delete preset-delete-btn" data-id="' + p.id + '">Delete</button>';
 
         const nameHtml = isBuiltin
             ? '<div class="saved-trial-name">' + escapeHtml(p.name) + ' <span class="saved-trial-badge">Built-In</span></div>'
-            : '<div class="saved-trial-name">' + escapeHtml(p.name) + '</div>';
+            : '<div class="saved-trial-name">' + escapeHtml(p.name) + ((p.timedRulingMode || p.advancedMode) ? '<span class="saved-trial-badge tr-mode-badge">' + ICON_SCALES + 'Timed Ruling Mode<span class="badge-info-icon">' + ICON_INFO + '</span></span>' : '') + '</div>';
 
         const dateHtml = isBuiltin
             ? '<div class="saved-trial-date">' + escapeHtml(desc) + '</div>'
@@ -631,7 +639,7 @@ function renderPresets() {
                     const preset = presets.find(p => p.id === btn.dataset.id);
                     if (preset) {
                         preset.blocks = JSON.parse(JSON.stringify(blocks));
-                        preset.advancedMode = advancedToggle.checked;
+                        preset.advancedMode = timedRulingToggle.checked;
                         preset.savedAt = new Date().toISOString();
                         savePresets(presets);
                         renderPresets();
@@ -792,16 +800,16 @@ function renderSavedTrials() {
         }
 
         const descHtml = t.description ? '<div class="saved-trial-desc">' + escapeHtml(t.description) + '</div>' : '';
-        const advIcon = t.advancedMode ? ICON_SCALES : '';
+        const trBadge = (t.timedRulingMode || t.advancedMode) ? '<span class="saved-trial-badge tr-mode-badge">' + ICON_SCALES + 'Timed Ruling Mode<span class="badge-info-icon">' + ICON_INFO + '</span></span>' : '';
         html += '<div class="saved-trial-card">' +
             '<div class="saved-trial-info">' +
-                '<div class="saved-trial-name">' + escapeHtml(t.name) + '</div>' +
+                '<div class="saved-trial-name">' + escapeHtml(t.name) + trBadge + '</div>' +
                 descHtml +
                 '<div class="saved-trial-date">' + new Date(t.savedAt).toLocaleDateString() + ' ' + new Date(t.savedAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + '</div>' +
                 progressHtml +
             '</div>' +
             '<div class="saved-trial-actions">' +
-                (hasProgress ? '<button class="saved-trial-launch" data-id="' + t.id + '">' + advIcon + 'Launch</button>' : '') +
+                (hasProgress ? '<button class="saved-trial-launch" data-id="' + t.id + '">Launch</button>' : '') +
                 '<button class="saved-trial-edit saved-trial-edit-desc" data-id="' + t.id + '" title="Edit description">Edit</button>' +
                 '<button class="saved-trial-delete saved-trial-delete-trial" data-id="' + t.id + '">Delete</button>' +
             '</div>' +
@@ -904,12 +912,12 @@ document.getElementById("start-trial-btn").addEventListener("click", () => {
     
     const leftTeam = pNameInput.value || 'Plaintiff';
     const rightTeam = dNameInput.value || 'Defense';
-    const advanced = advancedToggle.checked;
+    const trMode = timedRulingToggle.checked;
     
     const params = new URLSearchParams({
         leftTeam,
         rightTeam,
-        advanced: advanced.toString(),
+        advanced: trMode.toString(),
         blocks: encodeURIComponent(JSON.stringify(blocks))
     });
     
@@ -928,6 +936,31 @@ document.getElementById('clear-trials-btn').addEventListener('click', () => {
         () => { clearAllSavedTrials(); },
         'Clear All'
     );
+});
+
+// Info dialogs
+const trModeOverlay = document.getElementById('tr-mode-info-overlay');
+
+document.getElementById('tr-mode-info').addEventListener('click', () => {
+    trModeOverlay.classList.remove('hidden');
+});
+
+document.getElementById('tr-mode-info-ok').addEventListener('click', () => {
+    trModeOverlay.classList.add('hidden');
+});
+
+trModeOverlay.addEventListener('click', (e) => {
+    if (e.target === trModeOverlay) {
+        trModeOverlay.classList.add('hidden');
+    }
+});
+
+// Delegate badge info clicks (badges are re-rendered)
+document.addEventListener('click', (e) => {
+    const badgeInfo = e.target.closest('.badge-info-icon');
+    if (badgeInfo) {
+        trModeOverlay.classList.remove('hidden');
+    }
 });
 
 restoreSetupSession();

@@ -77,6 +77,17 @@ body {
 .caption-byline a { color: #c9a84c; text-decoration: none; font-weight: 600; transition: color 0.2s; }
 .caption-byline a:hover { color: #d4af37; }
 
+.version-tag {
+    font-size: 0.6rem;
+    color: #5a4a3a;
+    border: 1px solid #3a2a20;
+    border-radius: 2px;
+    padding: 1px 5px;
+    margin-left: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.02em;
+}
+
 /* ===== SECTION DIVIDER ===== */
 .section-divider {
     height: 1px;
@@ -194,7 +205,10 @@ body {
     border-left-color: #c9a84c;
 }
 
-.schedule-toggle label:last-child {
+.schedule-toggle .toggle-label-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
     font-size: 0.72rem;
     font-weight: 600;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -204,6 +218,37 @@ body {
     letter-spacing: 0.02em;
     text-transform: uppercase;
     user-select: none;
+}
+
+.schedule-toggle .toggle-label-text svg {
+    color: #c9a84c;
+    flex-shrink: 0;
+}
+
+.info-icon {
+    display: inline-flex;
+    align-items: center;
+    color: #c9a84c;
+    cursor: pointer;
+    transition: color 0.2s;
+    flex-shrink: 0;
+}
+
+.info-icon:hover {
+    color: #d4af37;
+}
+
+.badge-info-icon {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 4px;
+    color: #c9a84c;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.badge-info-icon:hover {
+    color: #d4af37;
 }
 
 /* toggle switch - court gavel style */
@@ -380,7 +425,7 @@ body {
     justify-content: space-between;
     align-items: center;
     background: transparent;
-    padding: 14px 18px;
+    padding: 12px 18px;
     border-bottom: 1px solid #2a2018;
     cursor: grab;
     transition:
@@ -456,7 +501,30 @@ body {
     opacity: 0.8;
 }
 
-.block-controls { display: flex; align-items: center; }
+.block-linked-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 8px;
+    padding: 2px 8px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #c9a84c;
+    border: 1px solid #3a2a20;
+    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+}
+
+.block-linked-badge svg {
+    opacity: 0.7;
+    width: 10px;
+    height: 10px;
+    margin-right: 0 !important;
+    display: block;
+}
 
 .block-delete {
     background: transparent;
@@ -692,6 +760,38 @@ body {
     margin-left: 6px;
     vertical-align: middle;
     letter-spacing: 0.04em;
+}
+
+.tr-mode-badge {
+    color: #c9a84c;
+    border-color: #c9a84c;
+    vertical-align: middle;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 3px 6px;
+    margin-left: 6px;
+    font-size: 0.6rem;
+    line-height: 1;
+}
+
+.tr-mode-badge svg {
+    width: 11px;
+    height: 11px;
+    flex-shrink: 0;
+}
+
+.tr-mode-badge .badge-info-icon {
+    color: #c9a84c;
+    opacity: 0.7;
+    display: inline-flex;
+    align-items: center;
+    margin-left: 0;
+    line-height: 0;
+}
+
+.tr-mode-badge .badge-info-icon:hover {
+    opacity: 1;
 }
 
 .saved-trial-resume {
@@ -983,4 +1083,158 @@ body {
 
 .confirm-btn:active {
     transform: scale(0.96);
+}
+
+/* ===== MOBILE (setup page) ===== */
+@media (max-width: 768px) {
+    body { padding: 20px 12px; }
+
+    .filing { padding: 28px 24px; }
+
+    .caption-title { font-size: 1.2rem; }
+
+    .caption-sub { font-size: 0.7rem; }
+
+    .schedule-top { 
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .schedule-toggle {
+        gap: 10px;
+        padding: 6px 12px 6px 16px;
+        align-self: stretch;
+    }
+
+    .schedule-toggle .toggle-label-text {
+        font-size: 0.65rem;
+        white-space: normal;
+        word-break: break-word;
+    }
+
+    #start-trial-btn {
+        padding: 14px 32px;
+        font-size: 0.85rem;
+    }
+
+    #save-trial-btn {
+        padding: 10px 20px;
+        margin-left: 8px;
+    }
+
+    .saved-trial-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .saved-trial-actions {
+        align-self: flex-end;
+    }
+
+    .block-card {
+        padding: 10px 12px;
+    }
+
+    .block-linked-badge {
+        font-size: 0.5rem;
+        padding: 1px 5px;
+    }
+
+    .confirm-dialog {
+        padding: 24px 20px 20px;
+        margin: 0 12px;
+        width: calc(100% - 24px);
+    }
+
+    .preset-dialog {
+        max-width: 100%;
+    }
+
+    .edit-fields label {
+        min-width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    body { padding: 12px 8px; }
+
+    .filing { padding: 20px 14px; }
+
+    .caption-title { font-size: 1rem; letter-spacing: 0.02em; }
+
+    .caption-seal { margin-bottom: 10px; }
+    .caption-seal svg { width: 28px; height: 28px; }
+
+    .section-divider { margin: 20px 0; }
+
+    .matter-heading { font-size: 0.6rem; margin-bottom: 14px; }
+
+    .party label { font-size: 0.6rem; }
+
+    .party input { padding: 6px 0 4px; }
+
+    .schedule h2 { font-size: 0.85rem; }
+
+    .schedule-toggle {
+        gap: 8px;
+        padding: 5px 10px 5px 12px;
+    }
+
+    .schedule-toggle .toggle-label-text {
+        font-size: 0.6rem;
+    }
+
+    .toggle-switch { width: 34px; height: 18px; }
+    .toggle-slider:before { width: 12px; height: 12px; }
+    .toggle-switch input:checked + .toggle-slider:before { transform: translateX(16px); }
+
+    .block-card { padding: 8px 10px; }
+    .block-main-content { gap: 8px; }
+    .block-main-content::before { min-width: 16px; font-size: 0.65rem; }
+    .block-name { font-size: 0.8rem; }
+    .block-time { font-size: 0.75rem; width: 56px; }
+    .block-delete { width: 28px; height: 28px; }
+    .block-linked-badge { font-size: 0.45rem; padding: 1px 4px; gap: 2px; }
+
+    #add-block-btn { padding: 10px; font-size: 0.72rem; }
+
+    .edit-panel { padding: 16px; }
+
+    #start-trial-btn {
+        padding: 12px 24px;
+        font-size: 0.8rem;
+        letter-spacing: 0.06em;
+    }
+
+    #save-trial-btn {
+        padding: 8px 16px;
+        font-size: 0.65rem;
+        margin-left: 6px;
+    }
+
+    .saved-trial-name { font-size: 0.78rem; }
+    .saved-trial-card { padding: 8px 10px; gap: 6px; }
+    .saved-trial-actions { gap: 4px; }
+    .saved-trial-actions button { padding: 5px 10px; font-size: 0.6rem; }
+
+    .saved-trials-header { flex-direction: column; gap: 8px; align-items: flex-start; }
+
+    #save-preset-btn, #clear-trials-btn { padding: 6px 14px; font-size: 0.6rem; }
+
+    .saved-trial-badge { font-size: 0.5rem; padding: 0 4px; }
+    .tr-mode-badge { padding: 2px 4px; font-size: 0.5rem; gap: 2px; }
+    .tr-mode-badge svg { width: 9px; height: 9px; }
+
+    .confirm-dialog { padding: 20px 16px 18px; }
+    .confirm-dialog h3 { font-size: 1rem; }
+    .confirm-dialog p { font-size: 0.75rem; }
+    .confirm-btn { padding: 8px 18px; font-size: 0.72rem; }
+    .confirm-actions { flex-direction: column; gap: 6px; }
+    .confirm-actions .confirm-btn { width: 100%; }
+
+    .preset-dialog-fields { gap: 10px; }
+    .preset-dialog-fields input,
+    .preset-dialog-fields textarea { padding: 8px 10px; font-size: 0.8rem; }
 }

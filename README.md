@@ -1,23 +1,28 @@
-# Bailiff - Mock Trial Timer
+# Bailiff — Mock Trial Timer
 
-Bailiff is a streamlined sequence management tool for mock trial timekeepers. Originally built for use at VLRE (Virginia Law Related Education) competitions, but it is flexible enough for any trial format. 
+A streamlined timer and sequence management tool for mock trial timekeepers. Originally built for VLRE (Virginia Law Related Education) competitions, flexible enough for any trial format. Dark courtroom theme, works in the browser.
 
-## Current Features
-* **Team Identification:** Configure Plaintiff/Prosecution and Defense team names at the top of the interface during setup.
-* **Trial Restructuring:** Add, name, and reorder segments via drag-and-drop before the round starts.
-* **Pre-Trial Lock:** Structure is locked once the trial begins to prevent accidental deletions or reordering during high-pressure rounds.
-* **Rapid Time Entry:** 4-digit auto-formatting (typing '0500' creates '05:00').
-* **Segment Linking:** Pair Direct and Cross-Examination blocks to enable smart time compensation.
-* **One-Tap Timers:** Individual countdowns for every segment.
-* **Easy Time Controls:** Buttons to add, set, and remove any amount of time.
-* **Advanced Objection Mode:** If enabled, when an objection occurs, the timekeeper chooses how time is recorded:
-    * **Sustained:** Time counts against the Examining side.
-    * **Overruled:** Time counts against the Opposing side (deducted from the linked segment).
-    * **Bench:** Time is paused for both sides (used for pauses, bench conferences, or simple clock-stops).
-    * **If disabled, time will always be paused for both sides**
+## Features
 
-## Planned Features (Live Mode)
-* **Local Session Sync:** Host (Timekeeper) controls the clock while secondary devices act as digital timecards.
+- **Team Setup** — Name the plaintiff/prosecution and defense sides. Random famous case names appear as placeholders.
+- **Block Management** — Add, name, reorder (drag-and-drop), and delete trial segments (opening, direct, cross, closing, etc.). Each block has a name and duration.
+- **Rapid Time Entry** — Type 4 digits (e.g., `0500`) and it auto-formats to `MM:SS`.
+- **Timed Ruling Mode** — Link blocks between sides (e.g., Direct Examination → Cross Examination). When an objection pauses the timer, choose how time is deducted:
+  - *Sustain* — time counts against the examining side.
+  - *Overrule* — time counts against the opposing side (deducted from the linked block).
+  - *Bench* — pause for both sides (no deduction).
+  - Disabled = time always pauses for both sides.
+- **Live Timer** — Start, pause, stop, restart. Quick +/-15s and +/-30s buttons. Custom time add/set/subtract. Countdown color-codes to warning (amber), critical (red pulse), and overtime.
+- **Next Block** — Advance to the next segment without leaving the timer.
+- **Saved Trials** — Save progress mid-round, resume later. Autosaves every 30s during a trial. Edit descriptions, delete individual trials, or clear all.
+- **Presets** — Save block configurations as reusable presets with a name and description. Built-in VLRE preset included. Drag-and-drop to reorder custom presets.
+- **Reload Resilience** — Timer and setup state survive accidental page reloads via sessionStorage.
+- **Save & Exit** — Save the full trial state (teams, blocks, timer progress) and return to the lobby.
+- **Mobile Responsive** — Adapts layout for smaller screens. Timer sidebars collapse and stack on phones.
+- **Dark Courtroom Theme** — Mahogany/gold aesthetic with Playfair Display headings, courtroom seal, and legal-filing document styling.
 
 ## Field Tested
-Bailiff was used to timekeep for my school’s other two teams at the DC Regional on 1/25/2026, and it performed reliably throughout the round under live competition conditions.
+
+**v1.0.0** was used to timekeep at the DC Regional on 1/25/2026 and performed reliably under live competition conditions.
+
+**v2.0.0** contains many improvements, but has not yet been tested in a live round.
