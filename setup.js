@@ -19,6 +19,28 @@ const dNameInput = document.getElementById("d-name");
 let currentEditingId = null;
 let nextBlockId = 5;
 
+const SS_SESSION_KEY = 'bailiff_setup_session';
+
+function saveSetupSession() {
+    try {
+        sessionStorage.setItem(SS_SESSION_KEY, JSON.stringify({
+            blocks, nextBlockId
+        }));
+    } catch {}
+}
+
+function restoreSetupSession() {
+    try {
+        const saved = JSON.parse(sessionStorage.getItem(SS_SESSION_KEY));
+        if (saved) {
+            blocks = saved.blocks;
+            nextBlockId = saved.nextBlockId;
+            return true;
+        }
+    } catch {}
+    return false;
+}
+
 const FAMOUS_CASES = [
     // Constitutional / AP Gov
     { p: "Brown", d: "Board of Education" },
@@ -165,6 +187,7 @@ advancedToggle.addEventListener('change', () => {
     advancedToggle.closest('.schedule-toggle').classList.toggle('schedule-toggle--active', advancedToggle.checked);
     updateLinkVisibility();
     renderBlocks();
+    saveSetupSession();
 });
 
 function createBlockElement(block, index) {
@@ -278,6 +301,7 @@ function deleteBlock(id) {
 function renderBlocks() {
     blockList.innerHTML = '';
     blocks.forEach((b, i) => blockList.appendChild(createBlockElement(b, i)));
+    saveSetupSession();
 }
 
 blockList.addEventListener("click", e => {
@@ -339,6 +363,7 @@ function syncArrayOrder() {
         blocks.find(b => b.id === parseInt(c.dataset.id))
     );
     updateBlockIndices();
+    saveSetupSession();
 }
 
 // ===== CONSTANTS =====
@@ -662,6 +687,12 @@ function deleteSavedTrial(trialId) {
     renderSavedTrials();
 }
 
+function clearAllSavedTrials() {
+    saveSavedTrials([]);
+    localStorage.removeItem('bailiff_autosave');
+    renderSavedTrials();
+}
+
 let pendingDescEditId = null;
 
 function editSavedTrialDescription(trialId) {
@@ -882,11 +913,26 @@ document.getElementById("start-trial-btn").addEventListener("click", () => {
         blocks: encodeURIComponent(JSON.stringify(blocks))
     });
     
+    sessionStorage.removeItem(SS_SESSION_KEY);
+    sessionStorage.removeItem('bailiff_timer_session');
     window.location.href = `timers.html?${params.toString()}`;
 });
 
-renderBlocks();
+document.getElementById('clear-trials-btn').addEventListener('click', () => {
+    const trials = getSavedTrials();
+    const hasAutosave = (() => { try { return !!JSON.parse(localStorage.getItem('bailiff_autosave')); } catch { return false; } })();
+    if (trials.length === 0 && !hasAutosave) return;
+    showDeleteConfirm(
+        'Clear all saved trials?',
+        'This will permanently remove all saved trials and auto-saves. This cannot be undone.',
+        () => { clearAllSavedTrials(); },
+        'Clear All'
+    );
+});
+
+restoreSetupSession();
 updateLinkVisibility();
+renderBlocks();
 renderSavedTrials();
 renderPresets();
 

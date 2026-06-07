@@ -42,14 +42,14 @@
                 <div class="party-row">
                     <div class="party">
                         <label for="p-name">Plaintiff / Prosecution</label>
-                        <input type="text" id="p-name" placeholder="e.g. Brown">
+                        <input type="text" id="p-name" placeholder="e.g. Brown" autocomplete="off">
                     </div>
                 </div>
                 <div class="party-vs">vs.</div>
                 <div class="party-row">
                     <div class="party">
                         <label for="d-name">Defense</label>
-                        <input type="text" id="d-name" placeholder="e.g. Board of Education">
+                        <input type="text" id="d-name" placeholder="e.g. Board of Education" autocomplete="off">
                     </div>
                 </div>
             </div>
@@ -76,8 +76,8 @@
             <div id="block-edit-panel" class="edit-panel hidden">
                 <h3>Edit Block</h3>
                 <div class="edit-fields">
-                    <label>Name<input type="text" id="edit-block-name"></label>
-                    <label>Time<input type="text" id="edit-block-time"></label>
+                    <label>Name<input type="text" id="edit-block-name" autocomplete="off"></label>
+                    <label>Time<input type="text" id="edit-block-time" autocomplete="off"></label>
                     <label id="link-label">
                         Link to:
                         <select id="edit-block-link">
@@ -103,6 +103,7 @@
         <div class="saved-trials">
             <div class="saved-trials-header">
                 <h2>Saved Trials</h2>
+                <button id="clear-trials-btn">Clear All</button>
             </div>
             <div class="saved-trials-list" id="saved-trials-list">
                 <div class="saved-trials-empty">No saved trials yet.</div>
@@ -130,7 +131,7 @@
             <div class="preset-dialog-fields">
                 <label>
                     <span>Preset Name</span>
-                    <input type="text" id="preset-name-input" placeholder="e.g. Standard Trial">
+                    <input type="text" id="preset-name-input" placeholder="e.g. Standard Trial" autocomplete="off">
                 </label>
                 <label>
                     <span>Description (optional)</span>

@@ -1,3 +1,38 @@
+// Session persistence for page reload resilience
+const TS_SESSION_KEY = 'bailiff_timer_session';
+
+function saveTimerSession() {
+    try {
+        sessionStorage.setItem(TS_SESSION_KEY, JSON.stringify({
+            leftTeamName, rightTeamName, advancedMode, blockTemplates,
+            blocks, currentBlockId, currentTeam,
+            timeRemaining, originalTimeBeforePause, pauseElapsed, sessionId
+        }));
+    } catch {}
+}
+
+// Check if this is a page reload (F5) vs a fresh navigation
+const isPageReload = (() => {
+    try {
+        const nav = performance.getEntriesByType('navigation')[0];
+        if (nav) return nav.type === 'reload';
+    } catch {}
+    try {
+        return performance.navigation.type === 1;
+    } catch {}
+    return false;
+})();
+
+let savedSessionData = null;
+if (isPageReload) {
+    try {
+        const saved = JSON.parse(sessionStorage.getItem(TS_SESSION_KEY));
+        if (saved) savedSessionData = saved;
+    } catch {}
+} else {
+    sessionStorage.removeItem(TS_SESSION_KEY);
+}
+
 // Get data from URL params or use defaults
 const urlParams = new URLSearchParams(window.location.search);
 const resumeId = urlParams.get('resume');
@@ -40,7 +75,7 @@ if (!resumeState) {
 
 // Generate a session ID so saves overwrite within the same session
 // (use the resumed trial's sessionId so re-saves update the same entry)
-const sessionId = (resumeState && resumeState.sessionId) || 'session-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
+let sessionId = (resumeState && resumeState.sessionId) || 'session-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
 
 // Create blocks for both teams
 let blocks = {
@@ -54,6 +89,16 @@ if (resumeBlocks) {
         left: resumeBlocks.left.map(b => ({ ...b })),
         right: resumeBlocks.right.map(b => ({ ...b }))
     };
+}
+
+// Restore everything from session on true reload
+if (savedSessionData) {
+    leftTeamName = savedSessionData.leftTeamName;
+    rightTeamName = savedSessionData.rightTeamName;
+    advancedMode = savedSessionData.advancedMode;
+    blockTemplates = savedSessionData.blockTemplates;
+    blocks = savedSessionData.blocks;
+    sessionId = savedSessionData.sessionId;
 }
 
 function escapeHtml(text) {
@@ -74,6 +119,16 @@ let originalTimeBeforePause = 0;
 let pauseElapsed = 0;
 let timerInterval = null;
 let pauseInterval = null;
+
+// Restore timer state variables from session
+if (savedSessionData) {
+    currentBlockId = savedSessionData.currentBlockId;
+    currentTeam = savedSessionData.currentTeam;
+    timeRemaining = savedSessionData.timeRemaining;
+    originalTimeBeforePause = savedSessionData.originalTimeBeforePause;
+    pauseElapsed = savedSessionData.pauseElapsed;
+    isStopped = true;
+}
 
 const leftWidgets = document.getElementById('left-widgets');
 const rightWidgets = document.getElementById('right-widgets');
@@ -196,6 +251,7 @@ function selectBlock(blockId, team) {
     currentBlockId = blockId;
     currentTeam = team;
     loadBlock();
+    saveTimerSession();
 }
 
 function loadBlock() {
@@ -216,7 +272,7 @@ function loadBlock() {
     secondaryTimer.classList.remove('visible');
     
     startBtn.style.display = 'inline-block';
-    startBtn.textContent = 'Start';
+    startBtn.textContent = isStopped ? 'Restart' : 'Start';
     startBtn.className = 'bench-btn bench-btn-primary';
     stopBtn.style.display = 'none';
     
@@ -250,6 +306,7 @@ function startTimer() {
         updateCountdownColor();
         renderWidgets();
     }, 1000);
+    saveTimerSession();
 }
 
 function pauseTimer() {
@@ -277,6 +334,7 @@ function pauseTimer() {
         pauseElapsed++;
         countdown.textContent = formatTime(pauseElapsed);
     }, 1000);
+    saveTimerSession();
 }
 
 function showPauseButtons() {
@@ -386,6 +444,7 @@ function stopTimerButton() {
     startBtn.className = 'bench-btn bench-btn-primary';
     startBtn.style.display = 'inline-block';
     stopBtn.style.display = 'none';
+    saveTimerSession();
 }
 
 function fullStop() {
@@ -398,6 +457,7 @@ function fullStop() {
     
     const pauseButtons = document.querySelectorAll('.pause-btn');
     pauseButtons.forEach(btn => btn.remove());
+    saveTimerSession();
 }
 
 function nextBlock() {
@@ -407,6 +467,7 @@ function nextBlock() {
         fullStop();
         selectBlock(nextBlock.id, currentTeam);
     }
+    saveTimerSession();
 }
 
 startBtn.addEventListener('click', () => {
@@ -440,6 +501,7 @@ resetBtn.addEventListener('click', () => {
         }
         
         renderWidgets();
+        saveTimerSession();
     }
 });
 
@@ -483,6 +545,7 @@ setCustomBtn.addEventListener('click', () => {
         renderWidgets();
     }
 
+    saveTimerSession();
 });
 
 subCustomBtn.addEventListener('click', () => {
@@ -510,6 +573,7 @@ function adjustTime(seconds) {
         }
         
         renderWidgets();
+        saveTimerSession();
     }
 }
 
@@ -581,6 +645,7 @@ document.getElementById('confirm-save-exit').addEventListener('click', () => {
     }
     localStorage.setItem('bailiff_saved_trials', JSON.stringify(trials));
     localStorage.removeItem('bailiff_autosave');
+    sessionStorage.removeItem(TS_SESSION_KEY);
     window.location.href = 'index.html';
 });
 
@@ -629,8 +694,13 @@ if (!resumeId) {
     localStorage.removeItem('bailiff_autosave');
 }
 
-// Initialize — resume from saved block or start with first block of left team
-if (resumeState && resumeState.timerState && resumeState.timerState.currentBlockId && resumeState.timerState.currentTeam) {
+// Save state on page unload (catches latest tick during countdown)
+window.addEventListener('beforeunload', saveTimerSession);
+
+// Initialize — restore from session, resume from saved block, or start with first block of left team
+if (savedSessionData) {
+    loadBlock();
+} else if (resumeState && resumeState.timerState && resumeState.timerState.currentBlockId && resumeState.timerState.currentTeam) {
     selectBlock(resumeState.timerState.currentBlockId, resumeState.timerState.currentTeam);
 } else {
     selectBlock(blocks.left[0].id, 'left');
