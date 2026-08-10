@@ -52,6 +52,8 @@ function escapeHtml(text) {
 
 const ICON_LINK = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="link-svg"><path d="M7 20l10 0"/><path d="M6 6l6 -1l6 1"/><path d="M12 3l0 17"/><path d="M9 12l-3 -6l-3 6a3 3 0 0 0 6 0"/><path d="M21 12l-3 -6l-3 6a3 3 0 0 0 6 0"/></svg>`;
 const ICON_TRASH = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7l16 0"/><path d="M10 11l0 6"/><path d="M14 11l0 6"/><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/></svg>`;
+const ICON_CHEVRON_UP = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6 -6l6 6"/></svg>`;
+const ICON_CHEVRON_DOWN = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6l6 -6"/></svg>`;
 const ICON_SCALES = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;"><path d="M7 20l10 0"/><path d="M6 6l6 -1l6 1"/><path d="M12 3l0 17"/><path d="M9 12l-3 -6l-3 6a3 3 0 0 0 6 0"/><path d="M21 12l-3 -6l-3 6a3 3 0 0 0 6 0"/></svg>`;
 const ICON_INFO = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`;
 
@@ -86,6 +88,8 @@ function createBlockElement(block, index) {
             <span class="block-time">${escapeHtml(block.time)}</span>
         </div>
         <div class="block-controls">
+            <button class="block-move block-move-up" title="Move Up"${index === 0 ? ' disabled' : ''}>${ICON_CHEVRON_UP}</button>
+            <button class="block-move block-move-down" title="Move Down"${index === blocks.length - 1 ? ' disabled' : ''}>${ICON_CHEVRON_DOWN}</button>
             <button class="block-delete" title="Delete Block">${ICON_TRASH}</button>
         </div>`;
 
@@ -109,9 +113,15 @@ function createBlockElement(block, index) {
 }
 
 function updateBlockIndices() {
-    blockList.querySelectorAll('.block-card:not(.removing)').forEach((card, i) => {
+    const cards = blockList.querySelectorAll('.block-card:not(.removing)');
+    cards.forEach((card, i) => {
         const content = card.querySelector('.block-main-content');
         if (content) content.dataset.index = i + 1;
+
+        const upBtn = card.querySelector('.block-move-up');
+        const downBtn = card.querySelector('.block-move-down');
+        if (upBtn) upBtn.disabled = i === 0;
+        if (downBtn) downBtn.disabled = i === cards.length - 1;
     });
 }
 
@@ -165,6 +175,60 @@ function closeEditPanel() {
     currentEditingId = null; 
 }
 
+function adjacentBlockCard(card, direction) {
+    let el = direction === -1 ? card.previousElementSibling : card.nextElementSibling;
+    while (el && !el.classList.contains('block-card')) {
+        el = direction === -1 ? el.previousElementSibling : el.nextElementSibling;
+    }
+    return el;
+}
+
+// Swaps two adjacent cards in place and FLIP-animates the shift, so an
+// arrow click on mobile visibly slides the block into its new spot instead
+// of the whole list silently re-rendering.
+function animateBlockSwap(card, sibling, direction) {
+    const cardBefore = card.getBoundingClientRect().top;
+    const siblingBefore = sibling.getBoundingClientRect().top;
+
+    if (direction === -1) blockList.insertBefore(card, sibling);
+    else blockList.insertBefore(sibling, card);
+
+    updateBlockIndices();
+    saveSetupSession();
+
+    [[card, cardBefore], [sibling, siblingBefore]].forEach(([el, before]) => {
+        const delta = before - el.getBoundingClientRect().top;
+        if (!delta) return;
+        el.style.transition = 'none';
+        el.style.transform = `translateY(${delta}px)`;
+        requestAnimationFrame(() => {
+            el.style.transition = 'transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)';
+            el.style.transform = '';
+            el.addEventListener('transitionend', () => {
+                el.style.transition = '';
+            }, { once: true });
+        });
+    });
+}
+
+function moveBlock(id, direction) {
+    const index = blocks.findIndex(b => b.id === id);
+    if (index === -1) return;
+    const newIndex = index + direction;
+    if (newIndex < 0 || newIndex >= blocks.length) return;
+
+    if (currentEditingId === id) closeEditPanel();
+    [blocks[index], blocks[newIndex]] = [blocks[newIndex], blocks[index]];
+
+    const card = blockList.querySelector(`.block-card[data-id="${id}"]`);
+    const sibling = card && adjacentBlockCard(card, direction);
+    if (card && sibling) {
+        animateBlockSwap(card, sibling, direction);
+    } else {
+        renderBlocks();
+    }
+}
+
 function deleteBlock(id) {
     const card = document.querySelector(`.block-card[data-id="${id}"]`);
     if (!card) return;
@@ -193,8 +257,14 @@ blockList.addEventListener("click", e => {
     if (e.target.closest('.badge-info-icon')) return;
     
     const deleteBtn = e.target.closest(".block-delete");
+    const moveUpBtn = e.target.closest(".block-move-up");
+    const moveDownBtn = e.target.closest(".block-move-down");
     if (deleteBtn) {
         deleteBlock(parseInt(card.dataset.id));
+    } else if (moveUpBtn) {
+        if (!moveUpBtn.disabled) moveBlock(parseInt(card.dataset.id), -1);
+    } else if (moveDownBtn) {
+        if (!moveDownBtn.disabled) moveBlock(parseInt(card.dataset.id), 1);
     } else {
         openEditPanel(parseInt(card.dataset.id));
     }
@@ -204,6 +274,8 @@ document.getElementById("add-block-btn").addEventListener("click", () => {
     const newB = { id: nextBlockId++, name: "New Block", time: "01:00", linked: null };
     blocks.push(newB);
     blockList.appendChild(createBlockElement(newB, blocks.length - 1));
+    updateBlockIndices();
+    saveSetupSession();
 });
 
 saveBtn.addEventListener("click", saveBlockChanges);
@@ -455,7 +527,6 @@ function renderPresets() {
     list.innerHTML = html;
 
     // Setup drag-and-drop for preset cards
-    let dragPresetId = null;
     list.querySelectorAll('.saved-trial-card[draggable]').forEach(card => {
         card.addEventListener('dragstart', () => {
             dragPresetId = card.dataset.id;
@@ -465,33 +536,6 @@ function renderPresets() {
             card.classList.remove('dragging');
             dragPresetId = null;
         });
-    });
-
-    list.addEventListener('dragover', e => {
-        e.preventDefault();
-        const dragging = list.querySelector('.dragging');
-        if (!dragging) return;
-        const afterEl = getDragAfterElementPreset(list, e.clientY);
-        // Prevent dragging before the first (builtin) card
-        if (afterEl === list.firstElementChild && list.firstElementChild.classList.contains('saved-trial-preset')) {
-            return;
-        }
-        if (afterEl == null) {
-            list.appendChild(dragging);
-        } else {
-            list.insertBefore(dragging, afterEl);
-        }
-    });
-
-    list.addEventListener('drop', e => {
-        e.preventDefault();
-        if (!dragPresetId) return;
-        const newOrder = [...list.querySelectorAll('.saved-trial-card[data-id]')].map(c => c.dataset.id)
-            .filter(id => id !== 'preset-vlre');
-        let savedPresets = JSON.parse(localStorage.getItem(PRESETS_KEY)) || [];
-        savedPresets.sort((a, b) => newOrder.indexOf(a.id) - newOrder.indexOf(b.id));
-        localStorage.setItem(PRESETS_KEY, JSON.stringify(savedPresets));
-        renderPresets();
     });
 
     list.querySelectorAll('.saved-trial-load').forEach(btn => {
@@ -530,6 +574,38 @@ function renderPresets() {
         btn.addEventListener('click', () => showDeleteConfirm('Delete this preset?', 'This preset will be permanently removed.', () => deletePreset(btn.dataset.id)));
     });
 }
+
+// Registered once (not inside renderPresets) — #presets-list is a persistent
+// element, and re-registering on every render would stack listeners forever.
+let dragPresetId = null;
+const presetsListEl = document.getElementById('presets-list');
+
+presetsListEl.addEventListener('dragover', e => {
+    e.preventDefault();
+    const dragging = presetsListEl.querySelector('.dragging');
+    if (!dragging) return;
+    const afterEl = getDragAfterElementPreset(presetsListEl, e.clientY);
+    // Prevent dragging before the first (builtin) card
+    if (afterEl === presetsListEl.firstElementChild && presetsListEl.firstElementChild.classList.contains('saved-trial-preset')) {
+        return;
+    }
+    if (afterEl == null) {
+        presetsListEl.appendChild(dragging);
+    } else {
+        presetsListEl.insertBefore(dragging, afterEl);
+    }
+});
+
+presetsListEl.addEventListener('drop', e => {
+    e.preventDefault();
+    if (!dragPresetId) return;
+    const newOrder = [...presetsListEl.querySelectorAll('.saved-trial-card[data-id]')].map(c => c.dataset.id)
+        .filter(id => id !== 'preset-vlre');
+    let savedPresets = JSON.parse(localStorage.getItem(PRESETS_KEY)) || [];
+    savedPresets.sort((a, b) => newOrder.indexOf(a.id) - newOrder.indexOf(b.id));
+    localStorage.setItem(PRESETS_KEY, JSON.stringify(savedPresets));
+    renderPresets();
+});
 
 function getDragAfterElementPreset(container, y) {
     const draggables = [...container.querySelectorAll('.saved-trial-card:not(.dragging)')];

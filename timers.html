@@ -31,7 +31,12 @@
             </div>
         </div>
 
-        <div class="courtroom-body">
+        <div class="courtroom-body" id="courtroom-body">
+            <div class="mobile-team-tabs" id="mobile-team-tabs">
+                <button class="team-tab active" id="tab-left" data-team="left">Plaintiff</button>
+                <button class="team-tab" id="tab-right" data-team="right">Defense</button>
+            </div>
+
             <div class="counsel left">
                 <div class="counsel-label">Plaintiff / Prosecution</div>
                 <div class="counsel-widgets" id="left-widgets"></div>
@@ -55,23 +60,33 @@
                         <button class="bench-btn bench-btn-secondary" id="next-btn" style="display: none;">Next Block</button>
                     </div>
 
-                    <div class="bench-quick-row">
-                        <button class="quick-btn quick-sub" id="sub-30-btn">-30s</button>
-                        <button class="quick-btn quick-sub" id="sub-15-btn">-15s</button>
+                    <div class="controls-divider"></div>
+
+                    <div class="bench-adjust-panel">
+                        <span class="panel-label">Adjust</span>
+                        <div class="adjust-cluster">
+                            <button class="quick-btn quick-sub" id="sub-30-btn">-30s</button>
+                            <button class="quick-btn quick-sub" id="sub-15-btn">-15s</button>
+                        </div>
                         <button class="quick-btn quick-neutral" id="reset-btn">Reset</button>
-                        <button class="quick-btn quick-add" id="add-15-btn">+15s</button>
-                        <button class="quick-btn quick-add" id="add-30-btn">+30s</button>
+                        <div class="adjust-cluster">
+                            <button class="quick-btn quick-add" id="add-15-btn">+15s</button>
+                            <button class="quick-btn quick-add" id="add-30-btn">+30s</button>
+                        </div>
                     </div>
 
                     <div class="bench-custom-row">
-                        <button class="mini-btn" id="clear-custom-btn">Clear</button>
-                        <input type="text" class="bench-time-input" id="custom-time-input" placeholder="00:00" autocomplete="off">
-                        <button class="mini-btn mini-add" id="add-custom-btn">Add</button>
-                        <button class="mini-btn" id="set-custom-btn">Set</button>
-                        <button class="mini-btn mini-sub" id="sub-custom-btn">Sub</button>
+                        <span class="panel-label">Custom</span>
+                        <div class="custom-input-group">
+                            <input type="text" class="bench-time-input" id="custom-time-input" placeholder="00:00" autocomplete="off">
+                            <button class="mini-btn mini-sub" id="sub-custom-btn">Sub</button>
+                            <button class="mini-btn mini-set" id="set-custom-btn">Set</button>
+                            <button class="mini-btn mini-add" id="add-custom-btn">Add</button>
+                        </div>
+                        <button class="mini-btn mini-clear" id="clear-custom-btn">Clear</button>
                     </div>
 
-                    <a class="bench-lobby-link" href="index.html">← Return to Lobby</a>
+                    <a class="bench-atrium-link" href="index.html">← Return to Atrium</a>
                 </div>
             </div>
 

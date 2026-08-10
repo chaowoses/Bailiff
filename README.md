@@ -17,7 +17,7 @@ A streamlined timer and sequence management tool for mock trial timekeepers. Ori
 - **Saved Trials**: Save progress mid-round, resume later. Autosaves every 30s during a trial. Edit descriptions, delete individual trials, or clear all.
 - **Presets**: Save block configurations as reusable presets with a name and description. Built-in VLRE preset included. Drag-and-drop to reorder custom presets.
 - **Reload Resilience**: Timer and setup state survive accidental page reloads via sessionStorage.
-- **Save & Exit**: Save the full trial state (teams, blocks, timer progress) and return to the lobby.
+- **Save & Exit**: Save the full trial state (teams, blocks, timer progress) and return to the atrium.
 - **Mobile Responsive**: Adapts layout for smaller screens. Timer sidebars collapse and stack on phones.
 - **Dark Courtroom Theme**: Mahogany/gold aesthetic with Playfair Display headings, courtroom seal, and legal-filing document styling.
 

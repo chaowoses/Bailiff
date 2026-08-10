@@ -54,7 +54,7 @@ body {
     justify-self: center;
 }
 
-.bench-lobby-link {
+.bench-atrium-link {
     font-size: 0.7rem;
     font-weight: 600;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -66,7 +66,7 @@ body {
     margin-top: 12px;
 }
 
-.bench-lobby-link:hover {
+.bench-atrium-link:hover {
     color: #c9a84c;
 }
 
@@ -119,6 +119,11 @@ body {
     display: flex;
     flex: 1;
     overflow: hidden;
+}
+
+/* Team switcher shown only on the stacked mobile layout */
+.mobile-team-tabs {
+    display: none;
 }
 
 /* ===== COUNSEL TABLES ===== */
@@ -365,12 +370,39 @@ body {
 .bench-btn-secondary { background: #2a2018; color: #8a7a6a; border: 1px solid #4a3a2a; }
 .bench-btn-secondary:hover { background: #3a2a20; color: #f0e8d8; border-color: #5a4a3a; box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
 
-/* ===== QUICK ROW ===== */
-.bench-quick-row {
+/* ===== CONTROL PANEL LABELS & DIVIDER ===== */
+.controls-divider {
+    width: 100%;
+    max-width: 280px;
+    height: 1px;
+    background: linear-gradient(to right, transparent, #3a2a20 50%, transparent);
+    margin: 2px 0;
+}
+
+.panel-label {
+    font-size: 0.6rem;
+    font-weight: 700;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #5a4a3a;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-right: 2px;
+}
+
+/* ===== QUICK ROW / ADJUST PANEL ===== */
+.bench-adjust-panel {
     display: flex;
-    gap: 6px;
     align-items: center;
-    justify-content: center;
+    gap: 10px;
+    padding: 9px 16px;
+    background: #1e1814;
+    border: 1px solid #2a2018;
+    border-radius: 6px;
+}
+
+.adjust-cluster {
+    display: flex;
+    gap: 4px;
 }
 
 .quick-btn {
@@ -404,19 +436,29 @@ body {
 /* ===== CUSTOM TIME ROW ===== */
 .bench-custom-row {
     display: flex;
-    gap: 4px;
+    gap: 10px;
     align-items: center;
     justify-content: center;
+    padding: 8px 16px;
+    background: #1e1814;
+    border: 1px solid #2a2018;
+    border-radius: 6px;
+}
+
+.custom-input-group {
+    display: flex;
+    align-items: stretch;
 }
 
 .bench-time-input {
-    width: 80px;
+    width: 70px;
     padding: 8px 10px;
     font-size: 0.85rem;
     font-family: 'JetBrains Mono', monospace;
     font-weight: 700;
-    border-radius: 5px;
+    border-radius: 5px 0 0 5px;
     border: 1px solid #3a2a20;
+    border-right: none;
     background: #1a1410;
     color: #f0e8d8;
     text-align: center;
@@ -427,6 +469,8 @@ body {
     outline: none;
     border-color: #c9a84c;
     box-shadow: 0 0 0 2px rgba(201, 168, 76, 0.15);
+    position: relative;
+    z-index: 1;
 }
 
 .mini-btn {
@@ -439,18 +483,44 @@ body {
     background: #221c16;
     color: #7a6a5a;
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
     box-shadow: 0 1px 3px rgba(0,0,0,0.15);
 }
 
-.mini-btn:hover { background: #3a2a20; color: #f0e8d8; border-color: #5a4a3a; transform: translateY(-1px); }
+.mini-btn:hover { background: #3a2a20; color: #f0e8d8; border-color: #5a4a3a; }
 .mini-btn:active { transform: scale(0.95); }
 
-.mini-add { color: #c9a84c; border-color: #c9a84c; background: #1e1a10; }
+.custom-input-group .mini-btn {
+    border-radius: 0;
+    border-left: none;
+    background: #221c16;
+    color: #7a6a5a;
+    border-color: #3a2a20;
+    border-bottom-width: 2px;
+}
+
+.custom-input-group .mini-btn:last-child {
+    border-radius: 0 5px 5px 0;
+}
+
+.custom-input-group .mini-sub { border-bottom-color: #8b1a1a; }
+.custom-input-group .mini-set { border-bottom-color: #5a4a3a; }
+.custom-input-group .mini-add { border-bottom-color: #c9a84c; }
+
+.custom-input-group .mini-set:hover { background: #3a2a20; color: #f0e8d8; border-color: #5a4a3a; }
+
 .mini-add:hover { background: #c9a84c; color: #1a1410; border-color: #c9a84c; }
 
-.mini-sub { color: #8b1a1a; border-color: #6e1515; background: #1e1010; }
 .mini-sub:hover { background: #8b1a1a; color: #f0e8d8; border-color: #8b1a1a; }
+
+.mini-clear {
+    color: #6a5a4a;
+    background: transparent;
+    box-shadow: none;
+    opacity: 0.75;
+}
+
+.mini-clear:hover { opacity: 1; }
 
 /* ===== CONFIRMATION OVERLAY ===== */
 .confirm-overlay {
@@ -619,11 +689,17 @@ body {
         padding: 12px 24px;
         font-size: 0.8rem;
     }
+
+    /* Any text input under 16px triggers iOS Safari's auto-zoom-on-focus. */
+    .bench-time-input,
+    .save-desc-field textarea {
+        font-size: 16px;
+    }
 }
 
 @media (max-width: 600px) {
-    body { overflow: auto; }
-    .courtroom { height: auto; min-height: 100vh; }
+    body { display: block; overflow: auto; height: auto; }
+    .courtroom { height: auto; min-height: auto; }
 
     .bench-header {
         grid-template-columns: 1fr;
@@ -650,8 +726,16 @@ body {
         font-size: 0.55rem;
     }
 
-    .bench-lobby-link {
-        display: none;
+    /* Was hidden entirely on mobile — that removed the only way to save & exit a trial. */
+    .bench-atrium-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 20px;
+        border: 1px solid #3a2a20;
+        border-radius: 5px;
+        font-size: 0.75rem;
+        margin-top: 4px;
     }
 
     .courtroom-body {
@@ -659,18 +743,61 @@ body {
         overflow: visible;
     }
 
-    .counsel {
-        width: 100%;
-        max-height: 200px;
-        overflow-y: auto;
-        border-right: none;
+    /* Timer comes first — it's the primary interaction on a phone. */
+    .bench {
+        order: 1;
+        flex: none;
+    }
+    .mobile-team-tabs { order: 2; }
+    .counsel.left, .counsel.right { order: 3; }
+
+    .mobile-team-tabs {
+        display: flex;
+        gap: 8px;
+        padding: 10px 12px;
+        background: #1e1814;
+        border-top: 1px solid #2a2018;
         border-bottom: 1px solid #2a2018;
-        flex-shrink: 0;
     }
 
-    .counsel.right {
+    .team-tab {
+        flex: 1;
+        padding: 10px 8px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        border-radius: 5px;
+        border: 1px solid #3a2a20;
+        background: #221c16;
+        color: #7a6a5a;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .team-tab.active {
+        background: #c9a84c;
+        color: #1a1410;
+        border-color: #c9a84c;
+    }
+
+    /* Only the tab's team agenda is shown at a time — full width, no more cramped side-by-side lists. */
+    .courtroom-body[data-mobile-view="left"] .counsel.right { display: none; }
+    .courtroom-body[data-mobile-view="right"] .counsel.left { display: none; }
+
+    .counsel {
+        width: 100%;
+        max-height: none;
+        overflow-y: visible;
+        border-right: none;
         border-left: none;
-        border-top: 1px solid #2a2018;
+        border-top: none;
+        border-bottom: 1px solid #2a2018;
+        flex-shrink: 0;
     }
 
     .counsel-label {
@@ -679,24 +806,20 @@ body {
     }
 
     .counsel-widgets {
-        padding: 8px 10px;
-        flex-direction: row;
-        flex-wrap: wrap;
-        gap: 4px;
+        padding: 10px 12px;
+        gap: 8px;
     }
 
     .block-widget {
-        flex: 1;
-        min-width: 120px;
-        padding: 8px 10px;
+        padding: 13px 14px;
     }
 
     .widget-name {
-        font-size: 0.72rem;
+        font-size: 0.85rem;
     }
 
     .widget-times {
-        font-size: 0.65rem;
+        font-size: 0.75rem;
     }
 
     .bench {
@@ -727,33 +850,79 @@ body {
 
     .bench-controls {
         margin-top: 16px;
-        gap: 8px;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .bench-main-controls {
+        flex-wrap: wrap;
+        row-gap: 8px;
     }
 
     .bench-btn {
-        padding: 10px 20px;
-        font-size: 0.75rem;
+        padding: 13px 20px;
+        font-size: 0.78rem;
+    }
+
+    .adjust-cluster {
+        gap: 8px;
     }
 
     .quick-btn {
-        padding: 6px 14px;
-        font-size: 0.72rem;
+        padding: 11px 16px;
+        font-size: 0.75rem;
     }
 
+    .bench-adjust-panel,
     .bench-custom-row {
         flex-wrap: wrap;
-        gap: 4px;
+        gap: 8px;
+        padding: 10px;
+        justify-content: center;
+    }
+
+    .panel-label {
+        display: none;
     }
 
     .bench-time-input {
         width: 70px;
-        padding: 6px 8px;
-        font-size: 0.78rem;
+        padding: 10px 8px;
+        font-size: 16px;
     }
 
     .mini-btn {
-        padding: 6px 10px;
-        font-size: 0.68rem;
+        padding: 10px 14px;
+        font-size: 0.72rem;
+    }
+
+    footer {
+        position: static;
+        margin-top: 16px;
+    }
+
+    /* Save & Exit dialog — was untuned for mobile and could overflow narrow screens. */
+    .confirm-dialog {
+        padding: 24px 20px 20px;
+        margin: 0 12px;
+        width: calc(100% - 24px);
+    }
+
+    .confirm-dialog h3 {
+        font-size: 1rem;
+    }
+
+    .confirm-dialog p {
+        font-size: 0.75rem;
+    }
+
+    .confirm-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .confirm-actions .confirm-btn {
+        width: 100%;
     }
 }
 

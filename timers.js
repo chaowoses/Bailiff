@@ -155,6 +155,23 @@ const clearCustomBtn = document.getElementById('clear-custom-btn');
 document.getElementById('left-team-name').textContent = leftTeamName;
 document.getElementById('right-team-name').textContent = rightTeamName;
 
+// Mobile team tabs — lets a phone user flip between agendas without the
+// active timer's team changing (that only changes via selectBlock).
+const courtroomBody = document.getElementById('courtroom-body');
+const mobileTabLeft = document.getElementById('tab-left');
+const mobileTabRight = document.getElementById('tab-right');
+mobileTabLeft.textContent = leftTeamName;
+mobileTabRight.textContent = rightTeamName;
+
+function setMobileView(team) {
+    courtroomBody.dataset.mobileView = team;
+    mobileTabLeft.classList.toggle('active', team === 'left');
+    mobileTabRight.classList.toggle('active', team === 'right');
+}
+
+mobileTabLeft.addEventListener('click', () => setMobileView('left'));
+mobileTabRight.addEventListener('click', () => setMobileView('right'));
+
 
 
 function parseTime(timeStr) {
@@ -281,8 +298,9 @@ function loadBlock() {
     
     const pauseButtons = document.querySelectorAll('.pause-btn');
     pauseButtons.forEach(btn => btn.remove());
-    
+
     renderWidgets();
+    setMobileView(currentTeam);
 }
 
 function startTimer() {
@@ -591,9 +609,9 @@ if (blockTemplates.length === 0) {
     };
 }
 
-// Confirmation dialog for Return to Lobby
+// Confirmation dialog for Return to Atrium
 const confirmOverlay = document.getElementById('confirm-overlay');
-document.querySelector('.bench-lobby-link').addEventListener('click', (e) => {
+document.querySelector('.bench-atrium-link').addEventListener('click', (e) => {
     e.preventDefault();
     const descInput = document.getElementById('save-desc-input');
     if (descInput && resumeState && resumeState.description) {

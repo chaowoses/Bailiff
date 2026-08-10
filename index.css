@@ -523,6 +523,35 @@ body {
     display: block;
 }
 
+.block-controls {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+}
+
+/* Move Up/Down — drag-and-drop reordering doesn't fire from touchscreens,
+   so this is the only way to reorder blocks on mobile. Desktop uses drag
+   instead (see .block-card[draggable]), so these stay hidden until the
+   mobile breakpoint below shows them. */
+.block-move {
+    display: none;
+    background: transparent;
+    border: none;
+    color: #5a4a3a;
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.block-move:hover:not(:disabled) { color: #c9a84c; background: rgba(201, 168, 76, 0.08); }
+.block-move:active:not(:disabled) { transform: scale(0.9); }
+.block-move:disabled { color: #2a2018; cursor: default; }
+
 .block-delete {
     background: transparent;
     border: none;
@@ -1092,6 +1121,15 @@ body {
 
     .caption-sub { font-size: 0.7rem; }
 
+    /* Any text input under 16px triggers iOS Safari's auto-zoom-on-focus. */
+    .party input,
+    .edit-fields input,
+    .edit-fields select,
+    .preset-dialog-fields input,
+    .preset-dialog-fields textarea {
+        font-size: 16px;
+    }
+
     .schedule-top { 
         flex-direction: column;
         align-items: flex-start;
@@ -1132,6 +1170,11 @@ body {
 
     .block-card {
         padding: 10px 12px;
+        cursor: default;
+    }
+
+    .block-move {
+        display: flex;
     }
 
     .block-linked-badge {
@@ -1192,7 +1235,8 @@ body {
     .block-main-content::before { min-width: 16px; font-size: 0.65rem; }
     .block-name { font-size: 0.8rem; }
     .block-time { font-size: 0.75rem; width: 56px; }
-    .block-delete { width: 28px; height: 28px; }
+    .block-move, .block-delete { width: 28px; height: 28px; }
+    .block-controls { gap: 0; }
     .block-linked-badge { font-size: 0.45rem; padding: 1px 4px; gap: 2px; }
 
     #add-block-btn { padding: 10px; font-size: 0.72rem; }
@@ -1213,12 +1257,12 @@ body {
 
     .saved-trial-name { font-size: 0.78rem; }
     .saved-trial-card { padding: 8px 10px; gap: 6px; }
-    .saved-trial-actions { gap: 4px; }
-    .saved-trial-actions button { padding: 5px 10px; font-size: 0.6rem; }
+    .saved-trial-actions { gap: 6px; }
+    .saved-trial-actions button { padding: 8px 14px; font-size: 0.68rem; }
 
     .saved-trials-header { flex-direction: column; gap: 8px; align-items: flex-start; }
 
-    #save-preset-btn, #clear-trials-btn { padding: 6px 14px; font-size: 0.6rem; }
+    #save-preset-btn, #clear-trials-btn { padding: 8px 16px; font-size: 0.65rem; }
 
     .saved-trial-badge { font-size: 0.5rem; padding: 0 4px; }
     .tr-mode-badge { padding: 2px 4px; font-size: 0.5rem; gap: 2px; }
@@ -1233,7 +1277,7 @@ body {
 
     .preset-dialog-fields { gap: 10px; }
     .preset-dialog-fields input,
-    .preset-dialog-fields textarea { padding: 8px 10px; font-size: 0.8rem; }
+    .preset-dialog-fields textarea { padding: 8px 10px; font-size: 16px; }
 }
 
 /* ===== FOOTER ===== */
