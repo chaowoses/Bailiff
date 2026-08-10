@@ -920,6 +920,11 @@ renderBlocks();
 renderSavedTrials();
 renderPresets();
 
-const randomCase = FAMOUS_CASES[Math.floor(Math.random() * FAMOUS_CASES.length)];
-pNameInput.placeholder = randomCase.p;
-dNameInput.placeholder = randomCase.d;
+function setPlaceholderCase() {
+    if (FAMOUS_CASES.length === 0) return;
+    const randomCase = FAMOUS_CASES[Math.floor(Math.random() * FAMOUS_CASES.length)];
+    pNameInput.placeholder = randomCase.p;
+    dNameInput.placeholder = randomCase.d;
+}
+
+loadFamousCases();
