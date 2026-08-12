@@ -25,7 +25,7 @@ A streamlined timer and sequence management tool for mock trial timekeepers. Ori
 
 **v1.0.0** was tested to timekeep at the DC Regional on 1/25/2026 and performed reliably under live competition conditions.
 
-**v2.0.0** contains many improvements, but has not yet been tested in a live round.
+**v2.x** contains many improvements, but has not yet been tested in a live round.
 
 ## License
 
