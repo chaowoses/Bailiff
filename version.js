@@ -1,5 +1,3 @@
-const BAILIFF_VERSION = 'v2.5.0';
-
 // ===== CHANGELOG =====
 // Add a new entry to the START of this list whenever BAILIFF_VERSION is
 // bumped. Only the newest entry (index 0) is ever shown to a returning user
@@ -27,6 +25,7 @@ const CHANGELOG = [
     }
 ];
 
+const BAILIFF_VERSION = CHANGELOG[0].version;
 const LAST_SEEN_VERSION_KEY = 'bailiff_last_seen_version';
 
 function buildChangelogOverlay(entry) {
