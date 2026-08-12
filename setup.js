@@ -739,13 +739,13 @@ function renderSavedTrials() {
                 const block = blockArr.find(b => b.id === t.timerState.currentBlockId);
                 if (block) {
                     const secs = block.remainingSeconds != null ? block.remainingSeconds : 0;
+                    const isOvertime = secs < 0;
                     const absSecs = Math.abs(secs);
                     const mins = Math.floor(absSecs / 60);
                     const secsDisplay = absSecs % 60;
-                    const prefix = secs < 0 ? '-' : '';
-                    const timeStr = prefix + String(mins).padStart(2, '0') + ':' + String(secsDisplay).padStart(2, '0');
+                    const timeStr = String(mins).padStart(2, '0') + ':' + String(secsDisplay).padStart(2, '0') + (isOvertime ? ' overtime' : '');
                     const sideLabel = team === 'left' ? (t.plaintiff || 'Plaintiff') : (t.defense || 'Defense');
-                    progressHtml = '<div class="saved-trial-progress">' + escapeHtml(sideLabel) + ' &mdash; ' + escapeHtml(block.name) + ' &middot; ' + timeStr + '</div>';
+                    progressHtml = '<div class="saved-trial-progress' + (isOvertime ? ' saved-trial-progress--overtime' : '') + '">' + escapeHtml(sideLabel) + ' &mdash; ' + escapeHtml(block.name) + ' &middot; ' + timeStr + '</div>';
                 }
             }
         }
@@ -902,29 +902,44 @@ function buildReadableExport(trials) {
     }
 
     trials.forEach((t, i) => {
+        const trMode = t.timedRulingMode || t.advancedMode;
+
         lines.push((i + 1) + '. ' + (t.name || 'Untitled Trial'));
+        if (t.id) lines.push('   ID: ' + t.id);
         if (t.savedAt) lines.push('   Saved: ' + new Date(t.savedAt).toLocaleString());
         if (t.plaintiff) lines.push('   Plaintiff: ' + t.plaintiff);
         if (t.defense) lines.push('   Defense: ' + t.defense);
-        lines.push('   Timed Ruling Mode: ' + ((t.timedRulingMode || t.advancedMode) ? 'Yes' : 'No'));
+        lines.push('   Timed Ruling Mode: ' + (trMode ? 'Yes' : 'No'));
         if (t.description) lines.push('   Description: ' + t.description);
         if (Array.isArray(t.blocks) && t.blocks.length > 0) {
-            const trMode = t.timedRulingMode || t.advancedMode;
-            lines.push('   Blocks:');
+            lines.push('   Schedule:');
             t.blocks.forEach(b => {
                 lines.push('     - ' + b.name + ' (' + b.time + ')' + (trMode && b.linked ? ' [linked]' : ''));
             });
         }
-        if (t.timerState && t.timerState.currentBlockId && t.timerState.currentTeam) {
-            const team = t.timerState.currentTeam;
-            const blockArr = t.timerState.blocks ? t.timerState.blocks[team] : null;
-            const block = blockArr ? blockArr.find(b => b.id === t.timerState.currentBlockId) : null;
-            if (block) {
+
+        const hasProgress = t.timerState && t.timerState.blocks &&
+            (t.timerState.blocks.left || t.timerState.blocks.right);
+        if (hasProgress) {
+            ['left', 'right'].forEach(team => {
+                const arr = t.timerState.blocks[team];
+                if (!Array.isArray(arr) || arr.length === 0) return;
                 const sideLabel = team === 'left' ? (t.plaintiff || 'Plaintiff') : (t.defense || 'Defense');
-                lines.push('   Progress: ' + sideLabel + ' — ' + block.name + ' · ' + formatTrialTime(block.remainingSeconds || 0));
-            }
+                lines.push('   ' + sideLabel + ' Progress:');
+                arr.forEach(b => {
+                    const isCurrent = t.timerState.currentTeam === team && t.timerState.currentBlockId === b.id;
+                    const status = b.remainingSeconds == null
+                        ? 'not started'
+                        : 'remaining ' + formatTrialTime(b.remainingSeconds);
+                    lines.push('     - ' + b.name + ' (' + b.time + ') — ' + status +
+                        (isCurrent ? ' [current]' : '') + (trMode && b.linked ? ' [linked]' : ''));
+                });
+            });
         }
+
         lines.push('-'.repeat(40));
+        lines.push("Exported from Bailiff Mock Trial Timer.");
+        lines.push("https://chaowoses.dev/Bailiff")
     });
 
     return lines.join('\n');
@@ -938,6 +953,490 @@ function buildJsonExport(trials) {
         exportedAt: new Date().toISOString(),
         trials: trials
     }, null, 2);
+}
+
+// ===== INFOGRAPHIC EXPORT =====
+const INFO_COLORS = {
+    ink: '#1a1410',
+    panel: '#221c16',
+    panel2: '#1e1712',
+    border: '#3a2a20',
+    borderSoft: '#2a2018',
+    cream: '#f0e8d8',
+    muted: '#8a7a6a',
+    muted2: '#6a5a4a',
+    gold: '#c9a84c',
+    goldLight: '#e0bc5c',
+    red: '#8b1a1a',
+    redText: '#d08a8a'
+};
+
+const ICON_SCALES_PATHS_D = [
+    'M7 20l10 0',
+    'M6 6l6 -1l6 1',
+    'M12 3l0 17',
+    'M9 12l-3 -6l-3 6a3 3 0 0 0 6 0',
+    'M21 12l-3 -6l-3 6a3 3 0 0 0 6 0'
+];
+
+function parseTimeStr(t) {
+    const parts = (t || '00:00').split(':').map(Number);
+    return (parts[0] || 0) * 60 + (parts[1] || 0);
+}
+
+function formatInfoDate(d) {
+    return new Date(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function igRoundRectPath(ctx, x, y, w, h, r) {
+    const rr = Math.max(0, Math.min(r, w / 2, h / 2));
+    ctx.beginPath();
+    ctx.moveTo(x + rr, y);
+    ctx.arcTo(x + w, y, x + w, y + h, rr);
+    ctx.arcTo(x + w, y + h, x, y + h, rr);
+    ctx.arcTo(x, y + h, x, y, rr);
+    ctx.arcTo(x, y, x + w, y, rr);
+    ctx.closePath();
+}
+
+function igDrawIcon(ctx, pathsD, x, y, size, color, strokeWidth) {
+    ctx.save();
+    ctx.translate(x, y);
+    const scale = size / 24;
+    ctx.scale(scale, scale);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = strokeWidth / scale;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    pathsD.forEach(d => ctx.stroke(new Path2D(d)));
+    ctx.restore();
+}
+
+// Manually advances per-character so uppercase "tracked" labels look right
+// regardless of whether the browser supports ctx.letterSpacing.
+function igTrackedText(ctx, text, x, y, opts) {
+    const { align = 'left', tracking = 0, font, color } = opts;
+    ctx.font = font;
+    ctx.fillStyle = color;
+    ctx.textBaseline = 'alphabetic';
+    const chars = [...text];
+    const widths = chars.map(ch => ctx.measureText(ch).width);
+    const totalWidth = widths.reduce((a, b) => a + b, 0) + tracking * Math.max(0, chars.length - 1);
+    let cx = align === 'center' ? x - totalWidth / 2 : align === 'right' ? x - totalWidth : x;
+    ctx.textAlign = 'left';
+    chars.forEach((ch, i) => {
+        ctx.fillText(ch, cx, y);
+        cx += widths[i] + tracking;
+    });
+    return totalWidth;
+}
+
+function igEllipsize(ctx, text, maxWidth) {
+    if (ctx.measureText(text).width <= maxWidth) return text;
+    let t = text;
+    while (t.length > 0 && ctx.measureText(t + '…').width > maxWidth) {
+        t = t.slice(0, -1);
+    }
+    return t.trim() + '…';
+}
+
+// Word-wraps to at most maxLines, ellipsizing the final line if content overflows.
+function igWrapLines(ctx, text, maxWidth, maxLines) {
+    const words = (text || '').split(/\s+/).filter(Boolean);
+    const lines = [];
+    let current = '';
+    let i = 0;
+    while (i < words.length) {
+        const test = current ? current + ' ' + words[i] : words[i];
+        if (ctx.measureText(test).width > maxWidth && current) {
+            lines.push(current);
+            current = '';
+            if (lines.length === maxLines) break;
+        } else {
+            current = test;
+            i++;
+        }
+    }
+    if (lines.length < maxLines && current) {
+        lines.push(current);
+        i = words.length;
+    }
+    if (i < words.length && lines.length > 0) {
+        lines[lines.length - 1] = igEllipsize(ctx, lines[lines.length - 1] + '…', maxWidth).replace(/…+$/, '…');
+    }
+    return lines;
+}
+
+function igHairline(ctx, x, y, w) {
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = INFO_COLORS.border;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + w, y);
+    ctx.stroke();
+    ctx.strokeStyle = INFO_COLORS.borderSoft;
+    ctx.beginPath();
+    ctx.moveTo(x, y + 3);
+    ctx.lineTo(x + w, y + 3);
+    ctx.stroke();
+}
+
+function igCornerBrackets(ctx, x, y, w, h, size, color) {
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.globalAlpha = 0.55;
+    [[x, y, 1, 1], [x + w, y, -1, 1], [x, y + h, 1, -1], [x + w, y + h, -1, -1]].forEach(([cx, cy, dx, dy]) => {
+        ctx.beginPath();
+        ctx.moveTo(cx, cy + size * dy);
+        ctx.lineTo(cx, cy);
+        ctx.lineTo(cx + size * dx, cy);
+        ctx.stroke();
+    });
+    ctx.restore();
+}
+
+// Renders a saved trial as a "docket poster" — draws to an oversized canvas
+// first since content height varies a lot (0-2 progress sides, N blocks),
+// then crops to the actual content height at the end.
+async function buildInfographicCanvas(trial) {
+    if (document.fonts && document.fonts.ready) {
+        try { await document.fonts.ready; } catch {}
+    }
+
+    const C = INFO_COLORS;
+    const W = 1200;
+    const MAX_H = 2600;
+    const OUTER = 22;
+    const PANEL_X = OUTER;
+    const PANEL_W = W - OUTER * 2;
+    const PAD_X = 66;
+    const contentX = PANEL_X + PAD_X;
+    const contentW = PANEL_W - PAD_X * 2;
+    const centerX = W / 2;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = W;
+    canvas.height = MAX_H;
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = C.border;
+    ctx.fillRect(0, 0, W, MAX_H);
+    ctx.fillStyle = C.panel;
+    ctx.fillRect(PANEL_X, OUTER, PANEL_W, MAX_H - OUTER * 2);
+
+    const trMode = !!(trial.timedRulingMode || trial.advancedMode);
+    let y = 108;
+
+    igDrawIcon(ctx, ICON_SCALES_PATHS_D, centerX - 26, y - 26, 52, C.gold, 3);
+    y += 42;
+    igTrackedText(ctx, 'IN THE CIRCUIT COURT OF MORGAN COUNTY', centerX, y, {
+        align: 'center', tracking: 2.2, font: '700 15px Inter, sans-serif', color: C.muted
+    });
+    y += 46;
+
+    igHairline(ctx, contentX, y, contentW);
+    y += 46;
+
+    igTrackedText(ctx, 'IN THE MATTER OF', centerX, y, {
+        align: 'center', tracking: 2.6, font: '700 14px Inter, sans-serif', color: C.muted2
+    });
+    y += 52;
+
+    ctx.textAlign = 'center';
+    ctx.font = '700 52px "Playfair Display", Georgia, serif';
+    ctx.fillStyle = C.cream;
+    ctx.fillText(trial.plaintiff || 'Plaintiff', centerX, y);
+    y += 46;
+    ctx.font = 'italic 600 26px "Playfair Display", Georgia, serif';
+    ctx.fillStyle = C.gold;
+    ctx.fillText('vs.', centerX, y);
+    y += 46;
+    ctx.font = '700 52px "Playfair Display", Georgia, serif';
+    ctx.fillStyle = C.cream;
+    ctx.fillText(trial.defense || 'Defense', centerX, y);
+    y += 58;
+
+    // Meta chips: saved date, and a Timed Ruling Mode badge if it applies
+    const chips = [];
+    if (trial.savedAt) chips.push({ text: 'SAVED ' + formatInfoDate(trial.savedAt).toUpperCase(), accent: false });
+    if (trMode) chips.push({ text: 'TIMED RULING MODE', accent: true, icon: true });
+
+    if (chips.length) {
+        ctx.font = '700 15px Inter, sans-serif';
+        const chipPad = 18, chipGap = 14, chipH = 40, iconSize = 14, iconGap = 8;
+        const widths = chips.map(c => ctx.measureText(c.text).width + chipPad * 2 + (c.icon ? iconSize + iconGap : 0));
+        const totalW = widths.reduce((a, b) => a + b, 0) + chipGap * (chips.length - 1);
+        let cx = centerX - totalW / 2;
+        chips.forEach((c, i) => {
+            const w = widths[i];
+            ctx.strokeStyle = c.accent ? C.gold : C.border;
+            ctx.lineWidth = 1.5;
+            igRoundRectPath(ctx, cx, y, w, chipH, 4);
+            ctx.stroke();
+            let tx = cx + chipPad;
+            if (c.icon) {
+                igDrawIcon(ctx, ICON_SCALES_PATHS_D, tx, y + chipH / 2 - iconSize / 2, iconSize, C.gold, 2);
+                tx += iconSize + iconGap;
+            }
+            ctx.font = '700 15px Inter, sans-serif';
+            ctx.fillStyle = c.accent ? C.gold : C.muted;
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(c.text, tx, y + chipH / 2 + 1);
+            ctx.textBaseline = 'alphabetic';
+            cx += w + chipGap;
+        });
+        y += chipH + 30;
+    }
+
+    // Description
+    if (trial.description) {
+        ctx.font = 'italic 400 20px Inter, sans-serif';
+        ctx.fillStyle = C.muted;
+        ctx.textAlign = 'center';
+        const lines = igWrapLines(ctx, '“' + trial.description + '”', contentW * 0.86, 2);
+        lines.forEach(line => {
+            ctx.fillText(line, centerX, y);
+            y += 28;
+        });
+        y += 12;
+    }
+
+    y += 8;
+    igHairline(ctx, contentX, y, contentW);
+    y += 50;
+
+    // ===== SCHEDULE OF PROCEEDINGS =====
+    const blocks = Array.isArray(trial.blocks) ? trial.blocks : [];
+    if (blocks.length) {
+        ctx.textAlign = 'left';
+        ctx.font = '700 30px "Playfair Display", Georgia, serif';
+        ctx.fillStyle = C.cream;
+        ctx.fillText('Schedule of Proceedings', contentX, y);
+
+        const totalSecs = blocks.reduce((s, b) => s + parseTimeStr(b.time), 0);
+        ctx.font = '600 18px "JetBrains Mono", monospace';
+        ctx.fillStyle = C.muted;
+        ctx.textAlign = 'right';
+        ctx.fillText(formatTrialTime(totalSecs) + ' total', contentX + contentW, y);
+        y += 34;
+
+        const rowH = blocks.length > 8 ? 44 : 54;
+        const idxColW = 52;
+        const timeColW = 130;
+        const tagColW = trMode ? 118 : 0;
+        const nameColW = contentW - idxColW - timeColW - tagColW - 16;
+
+        blocks.forEach((b, i) => {
+            y += rowH;
+            const baseline = y - rowH / 2 + 7;
+
+            ctx.textAlign = 'left';
+            ctx.font = '600 16px "JetBrains Mono", monospace';
+            ctx.fillStyle = C.muted2;
+            ctx.fillText(String(i + 1).padStart(2, '0'), contentX, baseline);
+
+            ctx.font = '500 20px Inter, sans-serif';
+            ctx.fillStyle = C.cream;
+            ctx.fillText(igEllipsize(ctx, b.name || '', nameColW), contentX + idxColW, baseline);
+
+            if (trMode && b.linked) {
+                ctx.font = '700 12px Inter, sans-serif';
+                const tagText = 'LINKED';
+                const tagW = ctx.measureText(tagText).width + 20;
+                const tagX = contentX + idxColW + nameColW + 16;
+                const tagY = baseline - 20;
+                ctx.strokeStyle = C.gold;
+                ctx.lineWidth = 1.3;
+                igRoundRectPath(ctx, tagX, tagY, tagW, 26, 4);
+                ctx.stroke();
+                ctx.fillStyle = C.gold;
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(tagText, tagX + 10, tagY + 13);
+                ctx.textBaseline = 'alphabetic';
+            }
+
+            ctx.font = '700 22px "JetBrains Mono", monospace';
+            ctx.fillStyle = C.gold;
+            ctx.textAlign = 'right';
+            ctx.fillText(b.time || '', contentX + contentW, baseline + 1);
+
+            if (i < blocks.length - 1) {
+                ctx.strokeStyle = C.borderSoft;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(contentX, y + rowH * 0.3);
+                ctx.lineTo(contentX + contentW, y + rowH * 0.3);
+                ctx.stroke();
+            }
+        });
+        y += rowH * 0.4;
+    }
+
+    // ===== RECORD OF PROCEEDINGS (per-side progress, if this trial has any) =====
+    const tsBlocks = trial.timerState && trial.timerState.blocks;
+    const hasProgress = tsBlocks && ((Array.isArray(tsBlocks.left) && tsBlocks.left.length) || (Array.isArray(tsBlocks.right) && tsBlocks.right.length));
+
+    if (hasProgress) {
+        y += 34;
+        igHairline(ctx, contentX, y, contentW);
+        y += 50;
+
+        ctx.textAlign = 'left';
+        ctx.font = '700 30px "Playfair Display", Georgia, serif';
+        ctx.fillStyle = C.cream;
+        ctx.fillText('Record of Proceedings', contentX, y);
+        y += 44;
+
+        ['left', 'right'].forEach(team => {
+            const arr = tsBlocks[team];
+            if (!Array.isArray(arr) || arr.length === 0) return;
+
+            const sideLabel = team === 'left' ? (trial.plaintiff || 'Plaintiff') : (trial.defense || 'Defense');
+            igTrackedText(ctx, sideLabel.toUpperCase(), contentX, y, {
+                align: 'left', tracking: 1.8, font: '700 15px Inter, sans-serif', color: C.muted
+            });
+            y += 30;
+
+            arr.forEach(b => {
+                const isCurrent = trial.timerState.currentTeam === team && trial.timerState.currentBlockId === b.id;
+                const totalSecs = parseTimeStr(b.time);
+                const remaining = b.remainingSeconds;
+                // Selecting a block (even without starting it) sets remainingSeconds
+                // to the full duration, so "not null" alone doesn't mean it ran —
+                // compare against the total to tell untouched blocks from ones that
+                // actually ticked down.
+                const untouched = remaining == null || (totalSecs > 0 && remaining >= totalSecs);
+                const isOvertime = !untouched && remaining < 0;
+
+                // The bar reads as time remaining, not time used: full and gold
+                // when untouched, shrinking gold from the right as time burns down
+                // (revealing the gray track behind it), solid red once overtime.
+                let fraction, statusText, barColor, textColor;
+                if (untouched) {
+                    fraction = 1;
+                    statusText = 'Not started — ' + formatTrialTime(totalSecs) + ' left';
+                    barColor = C.gold;
+                    textColor = C.muted;
+                } else if (isOvertime) {
+                    fraction = 1;
+                    statusText = formatTrialTime(Math.abs(remaining)) + ' overtime';
+                    barColor = C.red;
+                    textColor = C.redText;
+                } else {
+                    fraction = totalSecs > 0 ? Math.min(1, Math.max(0, remaining / totalSecs)) : 0;
+                    statusText = formatTrialTime(remaining) + ' left';
+                    barColor = isCurrent ? C.goldLight : C.gold;
+                    textColor = C.muted;
+                }
+
+                ctx.font = '500 18px Inter, sans-serif';
+                ctx.fillStyle = C.cream;
+                ctx.textAlign = 'left';
+                const nameWidth = ctx.measureText(b.name || '').width;
+                ctx.fillText(b.name || '', contentX, y);
+
+                if (isCurrent) {
+                    ctx.font = '800 12px Inter, sans-serif';
+                    const flagText = 'CURRENT';
+                    const flagW = ctx.measureText(flagText).width + 16;
+                    const flagX = contentX + nameWidth + 14;
+                    const flagY = y - 15;
+                    igRoundRectPath(ctx, flagX, flagY, flagW, 20, 3);
+                    ctx.fillStyle = C.gold;
+                    ctx.fill();
+                    ctx.fillStyle = C.ink;
+                    ctx.textAlign = 'left';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(flagText, flagX + 8, flagY + 10);
+                    ctx.textBaseline = 'alphabetic';
+                }
+
+                ctx.font = '600 16px "JetBrains Mono", monospace';
+                ctx.fillStyle = textColor;
+                ctx.textAlign = 'right';
+                ctx.fillText(statusText, contentX + contentW, y);
+
+                y += 18;
+
+                igRoundRectPath(ctx, contentX, y, contentW, 14, 7);
+                ctx.fillStyle = C.panel2;
+                ctx.fill();
+                ctx.strokeStyle = C.borderSoft;
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                if (fraction > 0) {
+                    ctx.save();
+                    igRoundRectPath(ctx, contentX, y, contentW, 14, 7);
+                    ctx.clip();
+                    ctx.fillStyle = barColor;
+                    ctx.fillRect(contentX, y, contentW * fraction, 14);
+                    ctx.restore();
+                }
+
+                y += 14 + 24;
+            });
+
+            y += 8;
+        });
+    }
+
+    // ===== FOOTER =====
+    y += 30;
+    ctx.textAlign = 'left';
+    igTrackedText(ctx, 'BAILIFF — MOCK TRIAL TIMER', contentX, y, {
+        align: 'left', tracking: 1.6, font: '700 14px Inter, sans-serif', color: C.muted2
+    });
+    y += 28;
+    igTrackedText(ctx, 'CHAOWOSES.DEV/BAILIFF', contentX, y, {
+        align: 'left', tracking: 1.2, font: '600 13px Inter, sans-serif', color: C.muted2
+    });
+    igTrackedText(ctx, 'GENERATED ' + formatInfoDate(new Date()).toUpperCase(), contentX + contentW, y, {
+        align: 'right', tracking: 1.2, font: '600 13px Inter, sans-serif', color: C.muted2
+    });
+
+    const panelBottom = y + 56;
+    const finalH = panelBottom + OUTER;
+
+    // Border + corner brackets, sized to the real content bounds now that we know them
+    ctx.strokeStyle = C.border;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(PANEL_X + 1, OUTER + 1, PANEL_W - 2, (finalH - OUTER) - OUTER - 2);
+    igCornerBrackets(ctx, PANEL_X + 16, OUTER + 16, PANEL_W - 32, (finalH - OUTER) - OUTER - 32, 16, C.gold);
+
+    // The draft canvas's panel fill runs all the way to MAX_H (we don't know
+    // the real content height until now), so cropping to finalH would leave
+    // panel color showing through the bottom OUTER margin instead of a clean
+    // border-color frame like the top has. Paint the frame color first, then
+    // stamp only the real content (up to the bottom margin) on top of it.
+    const finalCanvas = document.createElement('canvas');
+    finalCanvas.width = W;
+    finalCanvas.height = finalH;
+    const finalCtx = finalCanvas.getContext('2d');
+    finalCtx.fillStyle = C.border;
+    finalCtx.fillRect(0, 0, W, finalH);
+    finalCtx.drawImage(canvas, 0, 0, W, finalH - OUTER, 0, 0, W, finalH - OUTER);
+    return finalCanvas;
+}
+
+function canvasToPngBlob(canvas) {
+    return new Promise((resolve, reject) => {
+        canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Could not render PNG')), 'image/png');
+    });
+}
+
+function downloadBlob(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
 }
 
 function currentExportFormat() {
@@ -992,6 +1491,22 @@ document.querySelectorAll('input[name="export-format"]').forEach(input => {
 });
 
 document.getElementById('export-copy-btn').addEventListener('click', async () => {
+    const format = currentExportFormat();
+
+    if (format === 'image') {
+        setExportStatus('Rendering image…');
+        try {
+            const trial = getSavedTrials().find(t => t.id === pendingExportTrialId);
+            if (!trial) throw new Error('Trial not found');
+            const blob = await canvasToPngBlob(await buildInfographicCanvas(trial));
+            await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+            setExportStatus('Copied image to clipboard.');
+        } catch {
+            setExportStatus('Could not copy image to clipboard.', true);
+        }
+        return;
+    }
+
     try {
         await navigator.clipboard.writeText(currentExportText());
         setExportStatus('Copied to clipboard.');
@@ -1000,20 +1515,28 @@ document.getElementById('export-copy-btn').addEventListener('click', async () =>
     }
 });
 
-document.getElementById('export-download-btn').addEventListener('click', () => {
+document.getElementById('export-download-btn').addEventListener('click', async () => {
     const format = currentExportFormat();
-    const isJson = format === 'json';
     const trial = getSavedTrials().find(t => t.id === pendingExportTrialId);
-    const blob = new Blob([currentExportText()], { type: isJson ? 'application/json' : 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
     const stamp = new Date().toISOString().slice(0, 10);
-    a.href = url;
-    a.download = 'bailiff-' + slugify(trial ? trial.name : 'trial') + '-' + stamp + (isJson ? '.json' : '.txt');
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
+    const baseName = 'bailiff-' + slugify(trial ? trial.name : 'trial') + '-' + stamp;
+
+    if (format === 'image') {
+        setExportStatus('Rendering image…');
+        try {
+            if (!trial) throw new Error('Trial not found');
+            const blob = await canvasToPngBlob(await buildInfographicCanvas(trial));
+            downloadBlob(blob, baseName + '.png');
+            setExportStatus('Image downloaded.');
+        } catch {
+            setExportStatus('Could not render image.', true);
+        }
+        return;
+    }
+
+    const isJson = format === 'json';
+    const blob = new Blob([currentExportText()], { type: isJson ? 'application/json' : 'text/plain' });
+    downloadBlob(blob, baseName + (isJson ? '.json' : '.txt'));
     setExportStatus('File downloaded.');
 });
 

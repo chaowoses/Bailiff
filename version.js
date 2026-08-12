@@ -1,11 +1,20 @@
-const BAILIFF_VERSION = 'v2.4.0';
+const BAILIFF_VERSION = 'v2.5.0';
 
 // ===== CHANGELOG =====
-// Add a new entry to the end of this list whenever BAILIFF_VERSION is
-// bumped. Only the newest entry is ever shown to a returning user (via the
-// "What's New" popup below) — even if they skipped several versions since
-// their last visit.
+// Add a new entry to the START of this list whenever BAILIFF_VERSION is
+// bumped. Only the newest entry (index 0) is ever shown to a returning user
+// (via the "What's New" popup below) — even if they skipped several
+// versions since their last visit.
 const CHANGELOG = [
+    {
+        version: 'v2.5.0',
+        date: '08/12/26',
+        summary: 'Turn a saved trial into a shareable image.',
+        bullets: [
+            'New "Image" export format alongside Human-Readable and JSON: a docket-style poster with the schedule and progress',
+            'Copy the image straight to your clipboard, or download it as a PNG'
+        ]
+    },
     {
         version: 'v2.4.0',
         date: '08/12/26',
@@ -79,7 +88,7 @@ function buildChangelogOverlay(entry) {
 }
 
 function maybeShowChangelog() {
-    const latest = CHANGELOG[CHANGELOG.length - 1];
+    const latest = CHANGELOG[0];
     if (!latest || latest.version !== BAILIFF_VERSION) return;
 
     try {
