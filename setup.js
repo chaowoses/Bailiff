@@ -909,9 +909,10 @@ function buildReadableExport(trials) {
         lines.push('   Timed Ruling Mode: ' + ((t.timedRulingMode || t.advancedMode) ? 'Yes' : 'No'));
         if (t.description) lines.push('   Description: ' + t.description);
         if (Array.isArray(t.blocks) && t.blocks.length > 0) {
+            const trMode = t.timedRulingMode || t.advancedMode;
             lines.push('   Blocks:');
             t.blocks.forEach(b => {
-                lines.push('     - ' + b.name + ' (' + b.time + ')' + (b.linked ? ' [linked]' : ''));
+                lines.push('     - ' + b.name + ' (' + b.time + ')' + (trMode && b.linked ? ' [linked]' : ''));
             });
         }
         if (t.timerState && t.timerState.currentBlockId && t.timerState.currentTeam) {
