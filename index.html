@@ -111,7 +111,10 @@
         <div class="saved-trials">
             <div class="saved-trials-header">
                 <h2>Saved Trials</h2>
-                <button id="clear-trials-btn">Clear All</button>
+                <div class="saved-trials-header-actions">
+                    <button id="import-trials-btn">Import from JSON</button>
+                    <button id="clear-trials-btn">Clear All</button>
+                </div>
             </div>
             <div class="saved-trials-list" id="saved-trials-list">
                 <div class="saved-trials-empty">No saved trials yet.</div>
@@ -188,6 +191,64 @@
             <div class="confirm-actions">
                 <button class="confirm-btn confirm-cancel" id="desc-edit-cancel">Cancel</button>
                 <button class="confirm-btn confirm-save" id="desc-edit-save">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Trial Dialog -->
+    <div class="confirm-overlay hidden" id="export-dialog-overlay">
+        <div class="confirm-dialog preset-dialog">
+            <h3 id="export-dialog-title">Export Trial</h3>
+            <p>Choose a format, then download it as a file or copy it to your clipboard.</p>
+            <div class="export-format-toggle" id="export-format-toggle">
+                <label class="export-format-option active">
+                    <input type="radio" name="export-format" value="readable" checked>
+                    <span>Human-Readable</span>
+                </label>
+                <label class="export-format-option">
+                    <input type="radio" name="export-format" value="json">
+                    <span>JSON</span>
+                </label>
+            </div>
+            <div class="export-status" id="export-status"></div>
+            <div class="confirm-actions">
+                <button class="confirm-btn confirm-cancel" id="export-dialog-cancel">Cancel</button>
+                <button class="confirm-btn confirm-cancel" id="export-copy-btn">Copy to Clipboard</button>
+                <button class="confirm-btn confirm-save" id="export-download-btn">Download File</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Trials Dialog -->
+    <div class="confirm-overlay hidden" id="import-dialog-overlay">
+        <div class="confirm-dialog preset-dialog import-dialog">
+            <h3>Import Saved Trials</h3>
+            <div class="import-tabs">
+                <button type="button" class="import-tab active" id="import-tab-upload" data-tab="upload">Upload File</button>
+                <button type="button" class="import-tab" id="import-tab-paste" data-tab="paste">Paste JSON</button>
+            </div>
+
+            <div class="import-tab-panel" id="import-panel-upload">
+                <div class="import-dropzone" id="import-dropzone" tabindex="0">
+                    <input type="file" id="import-file-input" accept=".json,application/json" hidden>
+                    <p>Drag &amp; drop a JSON file here,<br>or click to browse</p>
+                </div>
+            </div>
+
+            <div class="import-tab-panel hidden" id="import-panel-paste">
+                <div class="preset-dialog-fields">
+                    <label>
+                        <span>Paste JSON</span>
+                        <textarea id="import-paste-input" rows="6" placeholder="Paste exported trial JSON here"></textarea>
+                    </label>
+                </div>
+            </div>
+
+            <div class="import-error hidden" id="import-error"></div>
+
+            <div class="confirm-actions">
+                <button class="confirm-btn confirm-cancel" id="import-dialog-cancel">Cancel</button>
+                <button class="confirm-btn confirm-save" id="import-paste-btn">Import</button>
             </div>
         </div>
     </div>

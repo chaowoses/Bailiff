@@ -955,6 +955,168 @@ body {
 
 #clear-trials-btn:active { transform: scale(0.97); }
 
+.saved-trials-header-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+#import-trials-btn {
+    padding: 8px 18px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    border-radius: 3px;
+    border: 1px solid #3a2a20;
+    background: transparent;
+    color: #7a6a5a;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: all 0.2s;
+}
+
+#import-trials-btn:hover {
+    border-color: #5a4a3a;
+    color: #f0e8d8;
+    background: #2a2018;
+}
+
+#import-trials-btn:active { transform: scale(0.97); }
+
+/* ===== EXPORT DIALOG ===== */
+.export-format-toggle {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 18px;
+}
+
+.export-format-option {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: 1px solid #3a2a20;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #8a7a6a;
+    transition: all 0.2s;
+}
+
+.export-format-option.active {
+    border-color: #c9a84c;
+    color: #f0e8d8;
+    background: rgba(201, 168, 76, 0.08);
+}
+
+.export-format-option input {
+    accent-color: #c9a84c;
+}
+
+.export-status {
+    min-height: 18px;
+    font-size: 0.72rem;
+    color: #7a9a6a;
+    margin: -6px 0 14px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.export-status.error {
+    color: #c07a7a;
+}
+
+/* ===== IMPORT DIALOG ===== */
+.import-dialog {
+    max-width: 460px;
+}
+
+.import-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 18px;
+    border: 1px solid #3a2a20;
+    border-radius: 4px;
+    padding: 3px;
+}
+
+.import-tab {
+    flex: 1;
+    padding: 8px 10px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border: none;
+    border-radius: 3px;
+    background: transparent;
+    color: #7a6a5a;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.import-tab.active {
+    background: #3a2a20;
+    color: #f0e8d8;
+}
+
+.import-tab-panel.hidden {
+    display: none;
+}
+
+.import-dropzone {
+    border: 2px dashed #3a2a20;
+    border-radius: 6px;
+    padding: 32px 16px;
+    text-align: center;
+    cursor: pointer;
+    color: #7a6a5a;
+    font-size: 0.78rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.5;
+    transition: all 0.2s;
+    margin-bottom: 18px;
+}
+
+.import-dropzone p { margin: 0; }
+
+.import-dropzone:hover,
+.import-dropzone:focus-visible {
+    border-color: #5a4a3a;
+    color: #f0e8d8;
+    background: #1e1712;
+    outline: none;
+}
+
+.import-dropzone.dragover {
+    border-color: #c9a84c;
+    color: #f0e8d8;
+    background: rgba(201, 168, 76, 0.08);
+}
+
+.import-error {
+    font-size: 0.75rem;
+    color: #d08a8a;
+    background: rgba(139, 26, 26, 0.12);
+    border: 1px solid #6e1515;
+    border-radius: 4px;
+    padding: 10px 12px;
+    margin: -6px 0 16px;
+    text-align: left;
+}
+
+.import-error.hidden {
+    display: none;
+}
+
+#import-paste-btn.hidden {
+    display: none;
+}
+
 /* ===== PRESET DIALOG ===== */
 .preset-dialog {
     max-width: 420px;

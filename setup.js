@@ -761,6 +761,7 @@ function renderSavedTrials() {
             '</div>' +
             '<div class="saved-trial-actions">' +
                 (hasProgress ? '<button class="saved-trial-launch" data-id="' + t.id + '">Launch</button>' : '') +
+                '<button class="saved-trial-edit saved-trial-export-btn" data-id="' + t.id + '" title="Export this trial">Export</button>' +
                 '<button class="saved-trial-edit saved-trial-edit-desc" data-id="' + t.id + '" title="Edit description">Edit</button>' +
                 '<button class="saved-trial-delete saved-trial-delete-trial" data-id="' + t.id + '">Delete</button>' +
             '</div>' +
@@ -783,6 +784,9 @@ function renderSavedTrials() {
 
     list.querySelectorAll('.saved-trial-launch:not([data-autosave])').forEach(btn => {
         btn.addEventListener('click', () => launchTrial(btn.dataset.id));
+    });
+    list.querySelectorAll('.saved-trial-export-btn').forEach(btn => {
+        btn.addEventListener('click', () => openExportDialog(btn.dataset.id));
     });
     list.querySelectorAll('.saved-trial-edit-desc').forEach(btn => {
         btn.addEventListener('click', () => editSavedTrialDescription(btn.dataset.id));
@@ -875,6 +879,293 @@ document.getElementById("start-trial-btn").addEventListener("click", () => {
     sessionStorage.removeItem(SS_SESSION_KEY);
     sessionStorage.removeItem('bailiff_timer_session');
     window.location.href = `timers.html?${params.toString()}`;
+});
+
+// ===== EXPORT SAVED TRIALS =====
+function formatTrialTime(secs) {
+    const absSecs = Math.abs(secs);
+    const mins = Math.floor(absSecs / 60);
+    const s = absSecs % 60;
+    return (secs < 0 ? '-' : '') + String(mins).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+}
+
+function buildReadableExport(trials) {
+    const lines = [];
+    lines.push('Bailiff — Saved Trials Export');
+    lines.push('Exported: ' + new Date().toLocaleString());
+    lines.push('='.repeat(40));
+    lines.push('');
+
+    if (trials.length === 0) {
+        lines.push('No saved trials.');
+        return lines.join('\n');
+    }
+
+    trials.forEach((t, i) => {
+        lines.push((i + 1) + '. ' + (t.name || 'Untitled Trial'));
+        if (t.savedAt) lines.push('   Saved: ' + new Date(t.savedAt).toLocaleString());
+        if (t.plaintiff) lines.push('   Plaintiff: ' + t.plaintiff);
+        if (t.defense) lines.push('   Defense: ' + t.defense);
+        lines.push('   Timed Ruling Mode: ' + ((t.timedRulingMode || t.advancedMode) ? 'Yes' : 'No'));
+        if (t.description) lines.push('   Description: ' + t.description);
+        if (Array.isArray(t.blocks) && t.blocks.length > 0) {
+            lines.push('   Blocks:');
+            t.blocks.forEach(b => {
+                lines.push('     - ' + b.name + ' (' + b.time + ')' + (b.linked ? ' [linked]' : ''));
+            });
+        }
+        if (t.timerState && t.timerState.currentBlockId && t.timerState.currentTeam) {
+            const team = t.timerState.currentTeam;
+            const blockArr = t.timerState.blocks ? t.timerState.blocks[team] : null;
+            const block = blockArr ? blockArr.find(b => b.id === t.timerState.currentBlockId) : null;
+            if (block) {
+                const sideLabel = team === 'left' ? (t.plaintiff || 'Plaintiff') : (t.defense || 'Defense');
+                lines.push('   Progress: ' + sideLabel + ' — ' + block.name + ' · ' + formatTrialTime(block.remainingSeconds || 0));
+            }
+        }
+        lines.push('-'.repeat(40));
+    });
+
+    return lines.join('\n');
+}
+
+function buildJsonExport(trials) {
+    return JSON.stringify({
+        app: 'bailiff',
+        type: 'saved-trials',
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        trials: trials
+    }, null, 2);
+}
+
+function currentExportFormat() {
+    const checked = document.querySelector('input[name="export-format"]:checked');
+    return checked ? checked.value : 'readable';
+}
+
+let pendingExportTrialId = null;
+
+function currentExportText() {
+    const trial = getSavedTrials().find(t => t.id === pendingExportTrialId);
+    const trials = trial ? [trial] : [];
+    return currentExportFormat() === 'json' ? buildJsonExport(trials) : buildReadableExport(trials);
+}
+
+function slugify(text) {
+    return (text || 'trial').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'trial';
+}
+
+function setExportStatus(message, isError) {
+    const el = document.getElementById('export-status');
+    el.textContent = message;
+    el.classList.toggle('error', !!isError);
+}
+
+function openExportDialog(trialId) {
+    const trial = getSavedTrials().find(t => t.id === trialId);
+    if (!trial) return;
+    pendingExportTrialId = trialId;
+    document.getElementById('export-dialog-title').textContent = 'Export "' + trial.name + '"';
+    setExportStatus('');
+    document.getElementById('export-dialog-overlay').classList.remove('hidden');
+}
+
+document.getElementById('export-dialog-cancel').addEventListener('click', () => {
+    document.getElementById('export-dialog-overlay').classList.add('hidden');
+});
+
+document.getElementById('export-dialog-overlay').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('export-dialog-overlay')) {
+        document.getElementById('export-dialog-overlay').classList.add('hidden');
+    }
+});
+
+document.querySelectorAll('input[name="export-format"]').forEach(input => {
+    input.addEventListener('change', () => {
+        document.querySelectorAll('.export-format-option').forEach(opt => {
+            opt.classList.toggle('active', opt.querySelector('input').checked);
+        });
+        setExportStatus('');
+    });
+});
+
+document.getElementById('export-copy-btn').addEventListener('click', async () => {
+    try {
+        await navigator.clipboard.writeText(currentExportText());
+        setExportStatus('Copied to clipboard.');
+    } catch {
+        setExportStatus('Could not copy to clipboard.', true);
+    }
+});
+
+document.getElementById('export-download-btn').addEventListener('click', () => {
+    const format = currentExportFormat();
+    const isJson = format === 'json';
+    const trial = getSavedTrials().find(t => t.id === pendingExportTrialId);
+    const blob = new Blob([currentExportText()], { type: isJson ? 'application/json' : 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const stamp = new Date().toISOString().slice(0, 10);
+    a.href = url;
+    a.download = 'bailiff-' + slugify(trial ? trial.name : 'trial') + '-' + stamp + (isJson ? '.json' : '.txt');
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    setExportStatus('File downloaded.');
+});
+
+// ===== IMPORT SAVED TRIALS =====
+function setImportTab(tab) {
+    document.getElementById('import-tab-upload').classList.toggle('active', tab === 'upload');
+    document.getElementById('import-tab-paste').classList.toggle('active', tab === 'paste');
+    document.getElementById('import-panel-upload').classList.toggle('hidden', tab !== 'upload');
+    document.getElementById('import-panel-paste').classList.toggle('hidden', tab !== 'paste');
+    document.getElementById('import-paste-btn').classList.toggle('hidden', tab !== 'paste');
+}
+
+document.getElementById('import-tab-upload').addEventListener('click', () => setImportTab('upload'));
+document.getElementById('import-tab-paste').addEventListener('click', () => setImportTab('paste'));
+
+function showImportError(message) {
+    const el = document.getElementById('import-error');
+    el.textContent = message;
+    el.classList.remove('hidden');
+}
+
+function clearImportError() {
+    document.getElementById('import-error').classList.add('hidden');
+}
+
+// Accepts either the wrapped export format ({ trials: [...] }) or a bare array of trials.
+function extractTrialsArray(parsed) {
+    if (Array.isArray(parsed)) return parsed;
+    if (parsed && typeof parsed === 'object' && Array.isArray(parsed.trials)) return parsed.trials;
+    return null;
+}
+
+function validateAndParseImport(text) {
+    let parsed;
+    try {
+        parsed = JSON.parse(text);
+    } catch {
+        return { error: 'That file isn\'t valid JSON.' };
+    }
+
+    const rawTrials = extractTrialsArray(parsed);
+    if (rawTrials === null) {
+        return { error: 'Unrecognized format. Expected a Bailiff saved trials export.' };
+    }
+    if (rawTrials.length === 0) {
+        return { error: 'No trials found in this file.' };
+    }
+
+    const trials = [];
+    for (let i = 0; i < rawTrials.length; i++) {
+        const t = rawTrials[i];
+        if (!t || typeof t !== 'object' || Array.isArray(t)) {
+            return { error: 'Entry ' + (i + 1) + ' is not a valid trial object.' };
+        }
+        if (typeof t.name !== 'string' || !t.name.trim()) {
+            return { error: 'Entry ' + (i + 1) + ' is missing a name.' };
+        }
+        if (t.blocks !== undefined && !Array.isArray(t.blocks)) {
+            return { error: 'Entry ' + (i + 1) + ' has an invalid "blocks" field.' };
+        }
+        trials.push(t);
+    }
+
+    return { trials };
+}
+
+function importTrials(text) {
+    const result = validateAndParseImport(text);
+    if (result.error) {
+        showImportError(result.error);
+        return;
+    }
+
+    const existing = getSavedTrials();
+    const imported = result.trials.map((t, i) => ({
+        ...t,
+        id: 'trial-' + Date.now() + '-' + i,
+        savedAt: (t.savedAt && !isNaN(new Date(t.savedAt))) ? t.savedAt : new Date().toISOString()
+    }));
+
+    saveSavedTrials(existing.concat(imported));
+    renderSavedTrials();
+    clearImportError();
+    document.getElementById('import-dialog-overlay').classList.add('hidden');
+}
+
+document.getElementById('import-trials-btn').addEventListener('click', () => {
+    clearImportError();
+    document.getElementById('import-file-input').value = '';
+    document.getElementById('import-paste-input').value = '';
+    setImportTab('upload');
+    document.getElementById('import-dialog-overlay').classList.remove('hidden');
+});
+
+document.getElementById('import-dialog-cancel').addEventListener('click', () => {
+    document.getElementById('import-dialog-overlay').classList.add('hidden');
+});
+
+document.getElementById('import-dialog-overlay').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('import-dialog-overlay')) {
+        document.getElementById('import-dialog-overlay').classList.add('hidden');
+    }
+});
+
+function readImportFile(file) {
+    if (!file) return;
+    if (!/\.json$/i.test(file.name) && file.type && file.type !== 'application/json') {
+        showImportError('Please choose a .json file.');
+        return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => importTrials(String(reader.result || ''));
+    reader.onerror = () => showImportError('Could not read that file.');
+    reader.readAsText(file);
+}
+
+const importDropzone = document.getElementById('import-dropzone');
+const importFileInput = document.getElementById('import-file-input');
+
+importDropzone.addEventListener('click', () => importFileInput.click());
+importDropzone.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        importFileInput.click();
+    }
+});
+
+importFileInput.addEventListener('change', () => {
+    readImportFile(importFileInput.files[0]);
+});
+
+importDropzone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    importDropzone.classList.add('dragover');
+});
+
+importDropzone.addEventListener('dragleave', () => {
+    importDropzone.classList.remove('dragover');
+});
+
+importDropzone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    importDropzone.classList.remove('dragover');
+    readImportFile(e.dataTransfer.files[0]);
+});
+
+document.getElementById('import-paste-btn').addEventListener('click', () => {
+    const text = document.getElementById('import-paste-input').value.trim();
+    if (!text) {
+        showImportError('Paste some JSON first.');
+        return;
+    }
+    importTrials(text);
 });
 
 document.getElementById('clear-trials-btn').addEventListener('click', () => {
