@@ -1031,6 +1031,21 @@ function igTrackedText(ctx, text, x, y, opts) {
     return totalWidth;
 }
 
+// TextMetrics.actualBoundingBoxAscent/Descent give the real glyph extents
+// (not the font's full line-height), which is what vertical-centering math
+// needs. Falls back to rough font-size ratios if a browser lacks them.
+function igGlyphAscent(ctx, text, font, fallbackSize) {
+    ctx.font = font;
+    const m = ctx.measureText(text);
+    return typeof m.actualBoundingBoxAscent === 'number' ? m.actualBoundingBoxAscent : fallbackSize * 0.72;
+}
+
+function igGlyphDescent(ctx, text, font, fallbackSize) {
+    ctx.font = font;
+    const m = ctx.measureText(text);
+    return typeof m.actualBoundingBoxDescent === 'number' ? m.actualBoundingBoxDescent : fallbackSize * 0.2;
+}
+
 function igEllipsize(ctx, text, maxWidth) {
     if (ctx.measureText(text).width <= maxWidth) return text;
     let t = text;
@@ -1143,19 +1158,37 @@ async function buildInfographicCanvas(trial) {
     });
     y += 52;
 
+    // "vs." is centered in the gap between the two party lines using actual
+    // glyph bounding boxes, not a fixed baseline split — splitting the
+    // baselines evenly reads as too low, since the big party text's visual
+    // weight sits further above its own baseline than "vs." does above its.
+    const plaintiffText = trial.plaintiff || 'Plaintiff';
+    const defenseText = trial.defense || 'Defense';
+    const partyFont = '700 52px "Playfair Display", Georgia, serif';
+    const vsFont = 'italic 600 26px "Playfair Display", Georgia, serif';
+
     ctx.textAlign = 'center';
-    ctx.font = '700 52px "Playfair Display", Georgia, serif';
     ctx.fillStyle = C.cream;
-    ctx.fillText(trial.plaintiff || 'Plaintiff', centerX, y);
-    y += 46;
-    ctx.font = 'italic 600 26px "Playfair Display", Georgia, serif';
+    ctx.font = partyFont;
+    ctx.fillText(plaintiffText, centerX, y);
+    const plaintiffBottom = y + igGlyphDescent(ctx, plaintiffText, partyFont, 52);
+
+    const defenseBaseline = y + 92;
+    const defenseTop = defenseBaseline - igGlyphAscent(ctx, defenseText, partyFont, 52);
+
+    const vsAscent = igGlyphAscent(ctx, 'vs.', vsFont, 26);
+    const vsDescent = igGlyphDescent(ctx, 'vs.', vsFont, 26);
+    const vsBaseline = (plaintiffBottom + defenseTop) / 2 + (vsAscent - vsDescent) / 2;
+
+    ctx.font = vsFont;
     ctx.fillStyle = C.gold;
-    ctx.fillText('vs.', centerX, y);
-    y += 46;
-    ctx.font = '700 52px "Playfair Display", Georgia, serif';
+    ctx.fillText('vs.', centerX, vsBaseline);
+
+    ctx.font = partyFont;
     ctx.fillStyle = C.cream;
-    ctx.fillText(trial.defense || 'Defense', centerX, y);
-    y += 58;
+    ctx.fillText(defenseText, centerX, defenseBaseline);
+
+    y = defenseBaseline + 58;
 
     // Meta chips: saved date, and a Timed Ruling Mode badge if it applies
     const chips = [];
