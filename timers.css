@@ -243,6 +243,94 @@ body {
     margin-top: 4px;
 }
 
+/* ===== WITNESS BLOCKS ===== */
+/* A witness-bearing block is never itself the thing on the clock — only
+   its header (a read-only rollup) is clickable, and only to expand or
+   collapse the nested witness rows beneath it. */
+.block-widget.has-witnesses {
+    cursor: default;
+    padding: 0;
+    overflow: hidden;
+}
+
+.widget-block-header {
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.widget-block-header:hover {
+    background: #261e18;
+}
+
+.block-widget.has-witnesses.active-parent .widget-block-header {
+    background: #1e1a12;
+    box-shadow: inset 3px 0 0 #5a4a3a;
+}
+
+.block-widget.has-witnesses.linked-highlight .widget-block-header {
+    background: #1e1212;
+    box-shadow: inset 3px 0 0 #8b1a1a;
+}
+
+.widget-expand-icon {
+    margin-left: auto;
+    display: inline-flex;
+    color: #5a4a3a;
+    transition: transform 0.2s ease;
+}
+
+.block-widget.expanded .widget-expand-icon {
+    transform: rotate(180deg);
+}
+
+.witness-widget-list {
+    display: none;
+    flex-direction: column;
+    gap: 1px;
+    background: #2a2018;
+}
+
+.block-widget.expanded .witness-widget-list {
+    display: flex;
+}
+
+.witness-widget-row {
+    background: #1c1712;
+    border-left: 3px solid #3a2a20;
+    padding: 8px 12px 8px 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.witness-widget-row:hover {
+    border-left-color: #5a4a3a;
+    background: #221c16;
+}
+
+.witness-widget-row.active {
+    border-left-color: #c9a84c;
+    background: #1e1a12;
+}
+
+.witness-widget-row.linked-highlight {
+    border-left-color: #8b1a1a;
+    background: #1e1212;
+}
+
+.witness-widget-row.completed {
+    opacity: 0.4;
+}
+
+.witness-widget-row .widget-name {
+    font-size: 0.74rem;
+    margin-bottom: 3px;
+}
+
+.witness-widget-row .widget-times {
+    font-size: 0.7rem;
+}
+
 .widget-elapsed.overtime {
     color: #cc3333;
 }

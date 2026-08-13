@@ -5,6 +5,17 @@
 // versions since their last visit.
 const CHANGELOG = [
     {
+        version: 'v3.0.0',
+        date: '08/12/26',
+        summary: 'Give a block witnesses.',
+        bullets: [
+            'Blocks like Direct and Cross can now have witnesses, each with its own timer',
+            'Choose Allocated Time (each witness gets a set countdown) or Stopwatch (open-ended, just tracks elapsed) per block',
+            'Copy a block\'s witnesses into another block, handy for mirroring Direct\'s witness list onto Cross',
+            'The block itself always keeps its own real total, shown as a collapsible header above its witnesses on the timer page'
+        ]
+    },
+    {
         version: 'v2.6.0',
         date: '08/12/26',
         summary: 'See how long each section actually ran.',

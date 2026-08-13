@@ -186,6 +186,12 @@ body {
     letter-spacing: 0.02em;
 }
 
+.schedule-top-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
 .schedule-toggle {
     display: flex;
     align-items: center;
@@ -387,6 +393,507 @@ body {
 
 #save-block-btn:active,
 #cancel-edit-btn:active { transform: scale(0.97); }
+
+/* ===== WITNESSES ===== */
+.witness-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 4px;
+    border-top: 1px solid #3a2a20;
+}
+
+.witness-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.witness-section-title {
+    font-size: 0.65rem;
+    font-weight: 600;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #7a6a5a;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.witness-copy-btn {
+    padding: 6px 12px;
+    background: #221c16;
+    border: 1px solid #3a2a20;
+    color: #c9a84c;
+    border-radius: 4px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-weight: 600;
+    font-size: 0.7rem;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.witness-copy-btn:hover {
+    border-color: #c9a84c;
+    background: #2a2018;
+}
+
+.witness-mode-toggle-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.witness-mode-toggle {
+    display: flex;
+    gap: 6px;
+    border: 1px solid #3a2a20;
+    border-radius: 4px;
+    padding: 3px;
+}
+
+.witness-mode-btn {
+    flex: 1;
+    padding: 6px 10px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border: none;
+    border-radius: 3px;
+    background: transparent;
+    color: #7a6a5a;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.witness-mode-btn.active {
+    background: #3a2a20;
+    color: #f0e8d8;
+}
+
+.witness-mode-btn:not(.active):hover {
+    color: #f0e8d8;
+}
+
+.witness-time-input:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.witness-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.witness-empty {
+    font-size: 0.72rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #5a4a3a;
+    font-style: italic;
+    padding: 4px 0;
+}
+
+.witness-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.witness-name-input,
+.witness-time-input {
+    padding: 8px 10px;
+    background: #221c16;
+    border: 1px solid #3a2a20;
+    color: #f0e8d8;
+    border-radius: 4px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.8rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.witness-name-input {
+    flex: 1;
+    min-width: 110px;
+}
+
+.witness-time-input {
+    width: 70px;
+    flex-shrink: 0;
+    font-family: 'JetBrains Mono', monospace;
+    text-align: center;
+}
+
+.witness-link-btn {
+    flex-shrink: 0;
+    max-width: 140px;
+    padding: 7px 10px;
+    background: transparent;
+    border: 1px solid #3a2a20;
+    border-radius: 4px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.7rem;
+    color: #7a6a5a;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: all 0.2s;
+}
+
+.witness-link-btn:hover {
+    border-color: #5a4a3a;
+    color: #f0e8d8;
+}
+
+.witness-link-btn.linked {
+    border-color: #c9a84c;
+    color: #c9a84c;
+}
+
+.witness-link-select:focus,
+.witness-link-select:hover {
+    border-color: #c9a84c;
+}
+
+.witness-name-input:focus,
+.witness-time-input:focus {
+    border-color: #c9a84c;
+}
+
+.witness-delete {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    color: #5a4a3a;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.witness-delete svg { width: 15px; height: 15px; }
+
+.witness-delete:hover {
+    color: #8b1a1a;
+    border-color: #6e1515;
+    background: #2a1818;
+}
+
+.witness-move-group {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    gap: 1px;
+}
+
+.witness-move {
+    background: transparent;
+    border: none;
+    color: #5a4a3a;
+    width: 22px;
+    height: 15px;
+    border-radius: 3px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.witness-move svg { width: 12px; height: 12px; }
+
+.witness-move:hover:not(:disabled) { color: #c9a84c; background: rgba(201, 168, 76, 0.08); }
+.witness-move:active:not(:disabled) { transform: scale(0.9); }
+.witness-move:disabled { color: #2a2018; cursor: default; }
+
+.witness-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.witness-group-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.witness-group-title {
+    font-size: 0.62rem;
+    font-weight: 600;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #5a4a3a;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.witness-section-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.witness-group-add,
+.witness-clear-btn {
+    padding: 8px 14px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    border-radius: 4px;
+    border: 1px solid #3a2a20;
+    background: transparent;
+    color: #7a6a5a;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    transition: all 0.2s;
+}
+
+.witness-group-add {
+    padding: 5px 10px;
+    font-size: 0.62rem;
+}
+
+.witness-group-add:hover,
+.witness-clear-btn:hover {
+    border-color: #5a4a3a;
+    color: #f0e8d8;
+    background: #2a2018;
+}
+
+.witness-clear-btn {
+    color: #a06060;
+    border-color: #5a2a2a;
+}
+
+.witness-clear-btn:hover {
+    border-color: #8a3a3a;
+    color: #f0d0d0;
+    background: #2a1818;
+}
+
+.witness-clear-btn.hidden { display: none; }
+
+#edit-block-time:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    color: #c9a84c;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+#edit-block-link:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ===== COPY WITNESSES DIALOG ===== */
+.witness-copy-dialog,
+.witness-link-dialog {
+    max-width: 480px;
+    text-align: left;
+}
+
+.witness-copy-source-label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #7a6a5a;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.witness-copy-source-label select {
+    padding: 10px;
+    background: #221c16;
+    border: 1px solid #3a2a20;
+    color: #f0e8d8;
+    border-radius: 4px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.85rem;
+    outline: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%237a6a5a' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: calc(100% - 10px) center;
+    padding-right: 32px;
+    transition: border-color 0.2s;
+}
+
+.witness-copy-source-label select:focus {
+    border-color: #c9a84c;
+}
+
+.witness-copy-picker {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 14px;
+}
+
+.witness-copy-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.witness-copy-group-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 0.62rem;
+    font-weight: 600;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #5a4a3a;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.witness-copy-select-all {
+    padding: 3px 8px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    border-radius: 3px;
+    border: 1px solid #3a2a20;
+    background: transparent;
+    color: #7a6a5a;
+    cursor: pointer;
+    text-transform: none;
+    letter-spacing: 0;
+    transition: all 0.2s;
+}
+
+.witness-copy-select-all:hover {
+    border-color: #5a4a3a;
+    color: #f0e8d8;
+}
+
+.witness-copy-checklist {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.witness-copy-checklist-empty {
+    font-size: 0.7rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #5a4a3a;
+    font-style: italic;
+}
+
+.witness-copy-checklist-heading {
+    font-size: 0.62rem;
+    font-weight: 600;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #7a6a5a;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 6px 0 -2px;
+}
+
+.witness-copy-checklist-heading:first-child {
+    margin-top: 0;
+}
+
+.witness-copy-pick-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: #221c16;
+    border: 1px solid #3a2a20;
+    border-radius: 4px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.78rem;
+    color: #f0e8d8;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+}
+
+.witness-copy-pick-row:hover {
+    border-color: #5a4a3a;
+}
+
+.witness-copy-pick-row.selected {
+    background: #c9a84c;
+    border-color: #c9a84c;
+    color: #1a1410;
+    font-weight: 600;
+}
+
+.witness-copy-pick-row .witness-copy-row-time {
+    margin-left: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: #7a6a5a;
+}
+
+.witness-copy-pick-row.selected .witness-copy-row-time {
+    color: #4a3a1a;
+}
+
+.witness-copy-side-toggle {
+    display: flex;
+    gap: 6px;
+    border: 1px solid #3a2a20;
+    border-radius: 4px;
+    padding: 3px;
+    margin-bottom: 14px;
+}
+
+.witness-copy-side-btn {
+    flex: 1;
+    padding: 8px 10px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border: none;
+    border-radius: 3px;
+    background: transparent;
+    color: #7a6a5a;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.witness-copy-side-btn.active {
+    background: #3a2a20;
+    color: #f0e8d8;
+}
+
+.witness-copy-side-btn:not(.active):hover {
+    color: #f0e8d8;
+}
+
+.block-witness-badge {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 8px;
+    padding: 2px 8px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #8a7a6a;
+    border: 1px solid #3a2a20;
+    border-radius: 3px;
+    white-space: nowrap;
+}
 
 /* ===== ADD BLOCK BUTTON ===== */
 #add-block-btn {
@@ -966,7 +1473,8 @@ body {
     justify-content: flex-end;
 }
 
-#import-trials-btn {
+#import-trials-btn,
+#import-presets-btn {
     padding: 8px 18px;
     font-size: 0.7rem;
     font-weight: 700;
@@ -981,13 +1489,15 @@ body {
     transition: all 0.2s;
 }
 
-#import-trials-btn:hover {
+#import-trials-btn:hover,
+#import-presets-btn:hover {
     border-color: #5a4a3a;
     color: #f0e8d8;
     background: #2a2018;
 }
 
-#import-trials-btn:active { transform: scale(0.97); }
+#import-trials-btn:active,
+#import-presets-btn:active { transform: scale(0.97); }
 
 /* ===== EXPORT DIALOG ===== */
 .export-format-toggle {
@@ -1297,10 +1807,17 @@ body {
         font-size: 16px;
     }
 
-    .schedule-top { 
+    .schedule-top {
         flex-direction: column;
         align-items: flex-start;
         gap: 12px;
+    }
+
+    .schedule-top-controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        width: 100%;
     }
 
     .schedule-toggle {

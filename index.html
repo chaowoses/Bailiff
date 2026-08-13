@@ -67,13 +67,22 @@
         <div class="schedule">
             <div class="schedule-top">
                 <h2>Schedule of Proceedings</h2>
-                <div class="schedule-toggle">
-                    <label for="timed-ruling-toggle" class="toggle-switch">
-                        <input type="checkbox" id="timed-ruling-toggle">
-                        <span class="toggle-slider"></span>
-                    </label>
-                    <label for="timed-ruling-toggle" class="toggle-label-text"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 20l10 0"/><path d="M6 6l6 -1l6 1"/><path d="M12 3l0 17"/><path d="M9 12l-3 -6l-3 6a3 3 0 0 0 6 0"/><path d="M21 12l-3 -6l-3 6a3 3 0 0 0 6 0"/></svg>Timed Ruling Mode</label>
-                    <span class="info-icon" id="tr-mode-info"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+                <div class="schedule-top-controls">
+                    <div class="witness-mode-toggle-wrap">
+                        <div class="witness-mode-toggle" id="witness-mode-toggle">
+                            <button type="button" class="witness-mode-btn active" data-mode="allocated">Allocated Time</button>
+                            <button type="button" class="witness-mode-btn" data-mode="stopwatch">Total Time</button>
+                        </div>
+                        <span class="info-icon" id="witness-mode-info"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+                    </div>
+                    <div class="schedule-toggle">
+                        <label for="timed-ruling-toggle" class="toggle-switch">
+                            <input type="checkbox" id="timed-ruling-toggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <label for="timed-ruling-toggle" class="toggle-label-text"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 20l10 0"/><path d="M6 6l6 -1l6 1"/><path d="M12 3l0 17"/><path d="M9 12l-3 -6l-3 6a3 3 0 0 0 6 0"/><path d="M21 12l-3 -6l-3 6a3 3 0 0 0 6 0"/></svg>Timed Ruling Mode</label>
+                        <span class="info-icon" id="tr-mode-info"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+                    </div>
                 </div>
             </div>
 
@@ -93,6 +102,34 @@
                         </select>
                     </label>
                 </div>
+
+                <div class="witness-section">
+                    <div class="witness-section-header">
+                        <span class="witness-section-title">Witnesses</span>
+                        <button type="button" id="witness-copy-btn" class="witness-copy-btn">Copy Witnesses</button>
+                    </div>
+
+                    <div class="witness-group" data-side="left">
+                        <div class="witness-group-header">
+                            <span class="witness-group-title" id="witness-group-title-left">Plaintiff Witnesses</span>
+                            <button type="button" class="witness-group-add" data-side="left">+ Add Witness</button>
+                        </div>
+                        <div class="witness-list" id="witness-list-left"></div>
+                    </div>
+
+                    <div class="witness-group" data-side="right">
+                        <div class="witness-group-header">
+                            <span class="witness-group-title" id="witness-group-title-right">Defense Witnesses</span>
+                            <button type="button" class="witness-group-add" data-side="right">+ Add Witness</button>
+                        </div>
+                        <div class="witness-list" id="witness-list-right"></div>
+                    </div>
+
+                    <div class="witness-section-actions">
+                        <button type="button" id="clear-witnesses-btn" class="witness-clear-btn hidden">Clear Witnesses</button>
+                    </div>
+                </div>
+
                 <div class="edit-actions">
                     <button id="save-block-btn">Save Changes</button>
                     <button id="cancel-edit-btn">Cancel</button>
@@ -126,7 +163,10 @@
         <div class="saved-trials">
             <div class="saved-trials-header">
                 <h2>Presets</h2>
-                <button id="save-preset-btn">Save as Preset</button>
+                <div class="saved-trials-header-actions">
+                    <button id="import-presets-btn">Import from JSON</button>
+                    <button id="save-preset-btn">Save as Preset</button>
+                </div>
             </div>
             <div class="saved-trials-list" id="presets-list">
                 <div class="saved-trials-empty">No presets yet.</div>
@@ -223,10 +263,10 @@
         </div>
     </div>
 
-    <!-- Import Trials Dialog -->
+    <!-- Import Dialog (Saved Trials or Presets) -->
     <div class="confirm-overlay hidden" id="import-dialog-overlay">
         <div class="confirm-dialog preset-dialog import-dialog">
-            <h3>Import Saved Trials</h3>
+            <h3 id="import-dialog-title">Import Saved Trials</h3>
             <div class="import-tabs">
                 <button type="button" class="import-tab active" id="import-tab-upload" data-tab="upload">Upload File</button>
                 <button type="button" class="import-tab" id="import-tab-paste" data-tab="paste">Paste JSON</button>
@@ -257,6 +297,59 @@
         </div>
     </div>
 
+    <!-- Copy Witnesses Dialog -->
+    <div class="confirm-overlay hidden" id="witness-copy-overlay">
+        <div class="confirm-dialog preset-dialog witness-copy-dialog">
+            <h3>Copy Witnesses</h3>
+            <label class="witness-copy-source-label">
+                <span>Copy from</span>
+                <select id="witness-copy-source-select">
+                    <option value="">Select a block…</option>
+                </select>
+            </label>
+
+            <div class="witness-copy-picker hidden" id="witness-copy-picker">
+                <div class="witness-copy-group" data-side="left">
+                    <div class="witness-copy-group-header">
+                        <span id="witness-copy-title-left">Plaintiff Witnesses</span>
+                        <button type="button" class="witness-copy-select-all" data-side="left">Select All</button>
+                    </div>
+                    <div class="witness-copy-checklist" id="witness-copy-checklist-left"></div>
+                </div>
+
+                <div class="witness-copy-group" data-side="right">
+                    <div class="witness-copy-group-header">
+                        <span id="witness-copy-title-right">Defense Witnesses</span>
+                        <button type="button" class="witness-copy-select-all" data-side="right">Select All</button>
+                    </div>
+                    <div class="witness-copy-checklist" id="witness-copy-checklist-right"></div>
+                </div>
+
+                <div class="witness-copy-side-toggle" id="witness-copy-side-toggle">
+                    <button type="button" class="witness-copy-side-btn active" data-side-mode="opposing">Opposing Side (Link for Rulings)</button>
+                    <button type="button" class="witness-copy-side-btn" data-side-mode="same">Same Side</button>
+                </div>
+            </div>
+
+            <div class="confirm-actions">
+                <button class="confirm-btn confirm-cancel" id="witness-copy-cancel">Cancel</button>
+                <button class="confirm-btn confirm-save" id="witness-copy-confirm" disabled>Copy Selected</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Link Witness Dialog -->
+    <div class="confirm-overlay hidden" id="witness-link-overlay">
+        <div class="confirm-dialog preset-dialog witness-link-dialog">
+            <h3>Link Witness</h3>
+            <p>Link <strong id="witness-link-name"></strong> to an opposing-side witness for Timed Ruling Mode: pick one, or choose Not Linked to clear it.</p>
+            <div class="witness-copy-checklist" id="witness-link-list"></div>
+            <div class="confirm-actions">
+                <button class="confirm-btn confirm-cancel" id="witness-link-cancel">Close</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Timed Ruling Mode Info Dialog -->
     <div class="confirm-overlay hidden" id="tr-mode-info-overlay">
         <div class="confirm-dialog">
@@ -270,6 +363,24 @@
             <p>You may not want this enabled: check your competition rules. Some simply discard paused time, while others deduct based on the ruling.</p>
             <div class="confirm-actions">
                 <button class="confirm-btn confirm-save" id="tr-mode-info-ok">Got it</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Witness Mode Info Dialog -->
+    <div class="confirm-overlay hidden" id="witness-mode-info-overlay">
+        <div class="confirm-dialog">
+            <div class="confirm-seal">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0"/><path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"/>
+                </svg>
+            </div>
+            <h3>Witness Timing Modes</h3>
+            <p><strong>Allocated Time</strong>: each witness gets their own time budget and counts down independently, the same as a normal block. The block's own time becomes a read-only sum of its witnesses' times.</p>
+            <p><strong>Total Time</strong>: witnesses have no budget of their own; each just counts up on a stopwatch while selected. The block's own time is the real, user-set budget that ticks down for real while any of its witnesses is running.</p>
+            <p>This is a single setting for the whole trial. Check your competition rules if you're not sure which one to use.</p>
+            <div class="confirm-actions">
+                <button class="confirm-btn confirm-save" id="witness-mode-info-ok">Got it</button>
             </div>
         </div>
     </div>
