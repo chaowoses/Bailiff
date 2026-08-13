@@ -5,11 +5,20 @@
 // versions since their last visit.
 const CHANGELOG = [
     {
+        version: 'v2.6.0',
+        date: '08/12/26',
+        summary: 'See how long each section actually ran.',
+        bullets: [
+            'Stopped blocks on the timer page now show an "Elapsed" time alongside the remaining/total display',
+            'Elapsed time turns red if a section ran past its allotted time'
+        ]
+    },
+    {
         version: 'v2.5.0',
         date: '08/12/26',
         summary: 'Turn a saved trial into a shareable image.',
         bullets: [
-            'New "Image" export format alongside Human-Readable and JSON: a docket-style poster with the schedule and progress',
+            'New "Image" export format alongside Plain Text and JSON: a docket-style poster with the schedule and progress',
             'Copy the image straight to your clipboard, or download it as a PNG'
         ]
     },

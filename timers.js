@@ -206,11 +206,12 @@ function renderWidgets() {
         blocks[team].forEach(block => {
             const widget = document.createElement('div');
             widget.className = 'block-widget';
-            
-            if (block.id === currentBlockId && block.team === currentTeam) {
+
+            const isActive = block.id === currentBlockId && block.team === currentTeam;
+            if (isActive) {
                 widget.classList.add('active');
             }
-            
+
             // Highlight linked block in opposing team
             if (timedRulingMode && currentBlockId && currentTeam) {
                 const currentBlock = blocks[currentTeam].find(b => b.id === currentBlockId);
@@ -242,12 +243,25 @@ function renderWidgets() {
                 remainingClass += ' warning';
             }
 
+            // An "Elapsed" line is added below the usual remaining/total row
+            // once a block has actually been stopped (see stopTimerButton/
+            // fullStop) — including the active widget the instant Stop is
+            // pressed, just not while it's still running or paused (mid-countdown).
+            const onTheClock = isActive && (isRunning || isPaused);
+            let elapsedHtml = '';
+            if (block.stopped && !onTheClock) {
+                const elapsedSecs = parseTime(block.time) - remaining;
+                const overtime = remaining < 0;
+                elapsedHtml = `<div class="widget-elapsed${overtime ? ' overtime' : ''}">Elapsed: ${formatTime(elapsedSecs)}</div>`;
+            }
+
             widget.innerHTML = `
                 <div class="widget-name">${linkIcon}${escapeHtml(block.name)}</div>
                 <div class="widget-times">
                     <span class="${remainingClass}">${formatTime(remaining)}</span>
                     <span class="widget-total">${escapeHtml(block.time)}</span>
                 </div>
+                ${elapsedHtml}
             `;
 
             widget.addEventListener('click', () => selectBlock(block.id, block.team));
@@ -308,6 +322,9 @@ function startTimer() {
     isRunning = true;
     isPaused = false;
     isStopped = false;
+    const currentBlock = blocks[currentTeam].find(b => b.id === currentBlockId);
+    if (currentBlock) currentBlock.stopped = false;
+    renderWidgets();
     startBtn.textContent = 'Pause';
     startBtn.className = 'bench-btn bench-btn-warn';
     stopBtn.style.display = 'inline-block';
@@ -454,18 +471,30 @@ function stopTimerButton() {
     }
     
     isStopped = true;
-    
+
+    const block = blocks[currentTeam].find(b => b.id === currentBlockId);
+    if (block) block.stopped = true;
+
     timeLabel.textContent = 'Stopped';
     secondaryTimer.classList.remove('visible');
-    
+
     startBtn.textContent = 'Restart';
     startBtn.className = 'bench-btn bench-btn-primary';
     startBtn.style.display = 'inline-block';
     stopBtn.style.display = 'none';
+    renderWidgets();
     saveTimerSession();
 }
 
 function fullStop() {
+    // nextBlock() calls this unconditionally, even on a block that was never
+    // started — only mark it "stopped" if it was actually running/paused,
+    // so navigating past an untouched block doesn't fake a stop.
+    if (isRunning || isPaused) {
+        const block = blocks[currentTeam] && blocks[currentTeam].find(b => b.id === currentBlockId);
+        if (block) block.stopped = true;
+    }
+
     clearInterval(timerInterval);
     clearInterval(pauseInterval);
     isRunning = false;
@@ -508,7 +537,8 @@ resetBtn.addEventListener('click', () => {
     if (block) {
         timeRemaining = parseTime(block.time);
         block.remainingSeconds = timeRemaining;
-        
+        block.stopped = false;
+
         // Update originalTimeBeforePause if paused
         if (isPaused) {
             originalTimeBeforePause = timeRemaining;
@@ -604,8 +634,8 @@ if (blockTemplates.length === 0) {
         { id: 4, name: "Closing Argument", time: "05:00", linked: null }
     ];
     blocks = {
-        left: blockTemplates.map(t => ({ ...t, team: 'left', remainingSeconds: null })),
-        right: blockTemplates.map(t => ({ ...t, team: 'right', remainingSeconds: null }))
+        left: blockTemplates.map(t => ({ ...t, team: 'left', remainingSeconds: null, stopped: false })),
+        right: blockTemplates.map(t => ({ ...t, team: 'right', remainingSeconds: null, stopped: false }))
     };
 }
 

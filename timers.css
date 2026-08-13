@@ -234,6 +234,19 @@ body {
     color: #4a3a2a;
 }
 
+.widget-elapsed {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    font-style: italic;
+    font-weight: 500;
+    color: #7a6a5a;
+    margin-top: 4px;
+}
+
+.widget-elapsed.overtime {
+    color: #cc3333;
+}
+
 /* ===== BENCH (CENTER) ===== */
 .bench {
     flex: 1;
