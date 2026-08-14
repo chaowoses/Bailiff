@@ -61,7 +61,17 @@ const VLRE_PRESET = {
 // Same reasoning as DEFAULT_BLOCKS above: unlinked, Total Time mode, blocks
 // carry the real budget while witnesses just count up.
 const AMTA_BLOCKS = [
-    { id: 1, name: "Opening & Closing", time: "14:00", linked: null },
+    {
+        id: 1, name: "Opening & Closing", time: "14:00", linked: null,
+        witnesses: [
+            { id: 17, name: "Opening Statement", time: "04:50", linked: null, side: "left" },
+            { id: 18, name: "Closing Argument", time: "4:50", linked: null, side: "left" },
+            { id: 19, name: "Closing Argument - Rebuttal", time: "05:00", linked: null, side: "left" },
+            { id: 20, name: "Opening Statement", time: "07:00", linked: null, side: "right" },
+            { id: 21, name: "Closing Argument", time: "07:00", linked: null, side: "right" }
+
+        ]
+    },
     {
         id: 2, name: "Direct Examination", time: "25:00", linked: null,
         witnesses: [

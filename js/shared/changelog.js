@@ -5,6 +5,14 @@
 // versions since their last visit.
 const CHANGELOG = [
     {
+        version: 'v3.2.1',
+        date: '08/14/26',
+        summary: 'AMTA preset breaks Opening & Closing into segments.',
+        bullets: [
+            'The AMTA preset\'s Opening & Closing block now has individual segments per side (Opening Statement, Closing Argument, and Closing Rebuttal for Plaintiff) instead of one shared timer'
+        ]
+    },
+    {
         version: 'v3.2.0',
         date: '08/14/26',
         summary: 'Track the trial clock, not just the block clocks.',
