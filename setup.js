@@ -944,7 +944,17 @@ const DEFAULT_BLOCKS = [
             { id: 10, name: "Defense Witness 3", time: "05:00", linked: null, side: "right" }
         ]
     },
-    { id: 3, name: "Cross Examination", time: "20:00", linked: null },
+    {
+        id: 3, name: "Cross Examination", time: "20:00", linked: null,
+        witnesses: [
+            { id: 5, name: "Plaintiff Witness 1", time: "05:00", linked: null, side: "right" },
+            { id: 6, name: "Plaintiff Witness 2", time: "05:00", linked: null, side: "right" },
+            { id: 7, name: "Plaintiff Witness 3", time: "05:00", linked: null, side: "r ight" },
+            { id: 8, name: "Defense Witness 1", time: "05:00", linked: null, side: "left" },
+            { id: 9, name: "Defense Witness 2", time: "05:00", linked: null, side: "left" },
+            { id: 10, name: "Defense Witness 3", time: "05:00", linked: null, side: "left" }
+        ]
+    },
     { id: 4, name: "Closing Argument", time: "05:00", linked: null }
 ];
 

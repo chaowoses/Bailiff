@@ -1,4 +1,4 @@
-const FAMOUS_CASES = [
+export const FAMOUS_CASES = [
     // Constitutional / AP Gov
     { p: "Brown", d: "Board of Education" },
     { p: "Miranda", d: "Arizona" },

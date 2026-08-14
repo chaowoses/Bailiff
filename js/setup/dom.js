@@ -1,0 +1,11 @@
+export const blockList = document.getElementById("block-list");
+export const editPanel = document.getElementById("block-edit-panel");
+export const editNameInput = document.getElementById("edit-block-name");
+export const editTimeInput = document.getElementById("edit-block-time");
+export const editLinkSelect = document.getElementById("edit-block-link");
+export const linkLabel = document.getElementById("link-label");
+export const saveBtn = document.getElementById("save-block-btn");
+export const cancelBtn = document.getElementById("cancel-edit-btn");
+export const timedRulingToggle = document.getElementById("timed-ruling-toggle");
+export const pNameInput = document.getElementById("p-name");
+export const dNameInput = document.getElementById("d-name");
