@@ -4,7 +4,10 @@ import { timedRulingToggle } from './dom.js';
 import { state, saveSetupSession, highestUsedId } from './state.js';
 import { renderBlocks } from './blocks.js';
 import { showDeleteConfirm } from './dialogs.js';
-import { downloadBlob, slugify } from './export-utils.js';
+// presets.js and export.js import from each other (this needs
+// openPresetExportDialog, export.js needs getPresets) — safe circular
+// import, same reasoning as blocks.js/witnesses.js.
+import { openPresetExportDialog } from './export.js';
 
 // ===== CONSTANTS =====
 const DEFAULT_BLOCKS = [
@@ -306,18 +309,7 @@ export function renderPresets() {
 }
 
 function exportPreset(presetId) {
-    const preset = getPresets().find(p => p.id === presetId);
-    if (!preset || preset.builtin) return;
-    const payload = {
-        app: 'bailiff',
-        type: 'presets',
-        version: 1,
-        exportedAt: new Date().toISOString(),
-        presets: [preset]
-    };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-    const stamp = new Date().toISOString().slice(0, 10);
-    downloadBlob(blob, 'bailiff-preset-' + slugify(preset.name) + '-' + stamp + '.json');
+    openPresetExportDialog(presetId);
 }
 
 // Registered once (not inside renderPresets) — #presets-list is a persistent

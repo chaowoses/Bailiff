@@ -1,9 +1,11 @@
 import { formatTime as formatTrialTime } from '../shared/time.js';
 import { downloadBlob, slugify, canvasToPngBlob } from './export-utils.js';
 import { buildInfographicCanvas } from './infographic.js';
-// getSavedTrials lives in saved-trials.js, which imports openExportDialog
-// from here — safe circular import, same reasoning as blocks.js/witnesses.js.
+// getSavedTrials/getPresets live in saved-trials.js/presets.js, which import
+// openExportDialog/openPresetExportDialog from here — safe circular import,
+// same reasoning as blocks.js/witnesses.js.
 import { getSavedTrials } from './saved-trials.js';
+import { getPresets } from './presets.js';
 
 // ===== EXPORT SAVED TRIALS =====
 function buildReadableExport(trials) {
@@ -103,14 +105,34 @@ function buildJsonExport(trials) {
     }, null, 2);
 }
 
+function buildPresetJsonExport(presets) {
+    return JSON.stringify({
+        app: 'bailiff',
+        type: 'presets',
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        presets: presets
+    }, null, 2);
+}
+
+// 'trial' offers all three formats (Plain Text/JSON/Image); 'preset' only
+// ever exports as JSON — a preset has no plaintiff/defense or progress to
+// put in a readable summary or docket-poster image, just a block schedule.
+let pendingExportKind = 'trial';
+let pendingExportTrialId = null;
+let pendingExportPresetId = null;
+
 function currentExportFormat() {
+    if (pendingExportKind === 'preset') return 'json';
     const checked = document.querySelector('input[name="export-format"]:checked');
     return checked ? checked.value : 'readable';
 }
 
-let pendingExportTrialId = null;
-
 function currentExportText() {
+    if (pendingExportKind === 'preset') {
+        const preset = getPresets().find(p => p.id === pendingExportPresetId);
+        return buildPresetJsonExport(preset ? [preset] : []);
+    }
     const trial = getSavedTrials().find(t => t.id === pendingExportTrialId);
     const trials = trial ? [trial] : [];
     return currentExportFormat() === 'json' ? buildJsonExport(trials) : buildReadableExport(trials);
@@ -125,8 +147,23 @@ function setExportStatus(message, isError) {
 export function openExportDialog(trialId) {
     const trial = getSavedTrials().find(t => t.id === trialId);
     if (!trial) return;
+    pendingExportKind = 'trial';
     pendingExportTrialId = trialId;
     document.getElementById('export-dialog-title').textContent = 'Export "' + trial.name + '"';
+    document.getElementById('export-dialog-desc').textContent = 'Choose a format, then download it as a file or copy it to your clipboard.';
+    document.getElementById('export-format-toggle').classList.remove('hidden');
+    setExportStatus('');
+    document.getElementById('export-dialog-overlay').classList.remove('hidden');
+}
+
+export function openPresetExportDialog(presetId) {
+    const preset = getPresets().find(p => p.id === presetId);
+    if (!preset || preset.builtin) return;
+    pendingExportKind = 'preset';
+    pendingExportPresetId = presetId;
+    document.getElementById('export-dialog-title').textContent = 'Export "' + preset.name + '"';
+    document.getElementById('export-dialog-desc').textContent = 'Download it as a JSON file, or copy it to your clipboard.';
+    document.getElementById('export-format-toggle').classList.add('hidden');
     setExportStatus('');
     document.getElementById('export-dialog-overlay').classList.remove('hidden');
 }
@@ -177,9 +214,12 @@ document.getElementById('export-copy-btn').addEventListener('click', async () =>
 
 document.getElementById('export-download-btn').addEventListener('click', async () => {
     const format = currentExportFormat();
-    const trial = getSavedTrials().find(t => t.id === pendingExportTrialId);
+    const isPreset = pendingExportKind === 'preset';
+    const subject = isPreset
+        ? getPresets().find(p => p.id === pendingExportPresetId)
+        : getSavedTrials().find(t => t.id === pendingExportTrialId);
     const stamp = new Date().toISOString().slice(0, 10);
-    const baseName = 'bailiff-' + slugify(trial ? trial.name : 'trial') + '-' + stamp;
+    const baseName = 'bailiff-' + (isPreset ? 'preset-' : '') + slugify(subject ? subject.name : (isPreset ? 'preset' : 'trial')) + '-' + stamp;
 
     if (format === 'image') {
         setExportStatus('Rendering image…');

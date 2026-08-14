@@ -1500,12 +1500,24 @@ body {
 #import-presets-btn:active { transform: scale(0.97); }
 
 /* ===== EXPORT DIALOG ===== */
+/* Tighter than the generic .confirm-dialog p bottom margin (24px) — this
+   dialog stacks a format picker and a status line between the description
+   and the action buttons, so the generic spacing compounds into a much
+   bigger gap than other confirm dialogs get. */
+#export-dialog-desc {
+    margin-bottom: 10px;
+}
+
 .export-format-toggle {
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
     justify-content: center;
-    margin-bottom: 18px;
+    margin-bottom: 10px;
+}
+
+.export-format-toggle.hidden {
+    display: none;
 }
 
 .export-format-option {
@@ -1528,15 +1540,47 @@ body {
     background: rgba(201, 168, 76, 0.08);
 }
 
+/* Custom-drawn radio dot (appearance:none + a centered ::before circle)
+   instead of the native control — native accent-color rendering places the
+   fill dot off-center at this size in some browsers. */
 .export-format-option input {
-    accent-color: #c9a84c;
+    appearance: none;
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    margin: 0;
+    flex-shrink: 0;
+    border: 1.5px solid #5a4a3a;
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+    display: grid;
+    place-content: center;
+}
+
+.export-format-option input::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #c9a84c;
+    transform: scale(0);
+    transition: transform 0.15s ease;
+}
+
+.export-format-option input:checked {
+    border-color: #c9a84c;
+}
+
+.export-format-option input:checked::before {
+    transform: scale(1);
 }
 
 .export-status {
-    min-height: 18px;
+    min-height: 14px;
     font-size: 0.72rem;
     color: #7a9a6a;
-    margin: -6px 0 14px;
+    margin: 0 0 6px;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
