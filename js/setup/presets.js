@@ -18,23 +18,23 @@ const DEFAULT_BLOCKS = [
     {
         id: 2, name: "Direct Examination", time: "25:00", linked: null,
         witnesses: [
-            { id: 5, name: "Plaintiff Witness 1", time: "08:20", linked: 11, side: "left" },
-            { id: 6, name: "Plaintiff Witness 2", time: "08:20", linked: 12, side: "left" },
-            { id: 7, name: "Plaintiff Witness 3", time: "08:20", linked: 13, side: "left" },
-            { id: 8, name: "Defense Witness 1", time: "08:20", linked: 14, side: "right" },
-            { id: 9, name: "Defense Witness 2", time: "08:20", linked: 15, side: "right" },
-            { id: 10, name: "Defense Witness 3", time: "08:20", linked: 16, side: "right" }
+            { id: 5, name: "Devan Rice", time: "08:20", linked: 11, side: "left" },
+            { id: 6, name: "Shawn Sonti", time: "08:20", linked: 12, side: "left" },
+            { id: 7, name: "Presley Kurthi", time: "08:20", linked: 13, side: "left" },
+            { id: 8, name: "Dakota Saravana", time: "08:20", linked: 14, side: "right" },
+            { id: 9, name: "Justice Marlow", time: "08:20", linked: 15, side: "right" },
+            { id: 10, name: "Kendall Rose", time: "08:20", linked: 16, side: "right" }
         ]
     },
     {
         id: 3, name: "Cross Examination", time: "20:00", linked: null,
         witnesses: [
-            { id: 11, name: "Plaintiff Witness 1", time: "06:40", linked: 5, side: "right" },
-            { id: 12, name: "Plaintiff Witness 2", time: "06:40", linked: 6, side: "right" },
-            { id: 13, name: "Plaintiff Witness 3", time: "06:40", linked: 7, side: "right" },
-            { id: 14, name: "Defense Witness 1", time: "06:40", linked: 8, side: "left" },
-            { id: 15, name: "Defense Witness 2", time: "06:40", linked: 9, side: "left" },
-            { id: 16, name: "Defense Witness 3", time: "06:40", linked: 10, side: "left" }
+            { id: 11, name: "Devan Rice", time: "06:40", linked: 5, side: "right" },
+            { id: 12, name: "Shawn Sonti", time: "06:40", linked: 6, side: "right" },
+            { id: 13, name: "Presley Kurthi", time: "06:40", linked: 7, side: "right" },
+            { id: 14, name: "Dakota Saravana", time: "06:40", linked: 8, side: "left" },
+            { id: 15, name: "Justice Marlow", time: "06:40", linked: 9, side: "left" },
+            { id: 16, name: "Kendall Rose", time: "06:40", linked: 10, side: "left" }
         ]
     },
     { id: 4, name: "Closing Argument", time: "05:00", linked: null }
