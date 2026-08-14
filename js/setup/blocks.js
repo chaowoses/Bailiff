@@ -8,7 +8,7 @@ import { formatTimeInputValue } from './time-input.js';
 // renderBlocks/closeEditPanel) — safe as a circular ES module import since
 // both sides only touch the imports inside event-handler functions, never
 // at module-evaluation time.
-import { renderWitnessSection, unlinkWitnessEverywhere } from './witnesses.js';
+import { renderWitnessSection, unlinkWitnessEverywhere, isWitnessTimeUneven } from './witnesses.js';
 
 const placeholder = document.createElement("div");
 placeholder.className = "block-placeholder";
@@ -49,11 +49,18 @@ export function buildBlockBadges(block) {
     return html;
 }
 
+function blockTimeDisplay(block) {
+    return isWitnessTimeUneven(block) ? 'Uneven' : block.time;
+}
+
 export function updateBlockTimeDisplay(block) {
     const card = document.querySelector(`.block-card[data-id="${block.id}"]`);
     if (!card) return;
     const timeSpan = card.querySelector('.block-time');
-    if (timeSpan) timeSpan.textContent = block.time;
+    if (timeSpan) {
+        timeSpan.textContent = blockTimeDisplay(block);
+        timeSpan.classList.toggle('block-time-uneven', isWitnessTimeUneven(block));
+    }
     const nameSpan = card.querySelector('.block-name');
     if (nameSpan) nameSpan.innerHTML = escapeHtml(block.name) + buildBlockBadges(block);
 }
@@ -65,11 +72,12 @@ function createBlockElement(block, index) {
     div.setAttribute("draggable", "true");
 
     const badgeHtml = buildBlockBadges(block);
+    const timeClass = 'block-time' + (isWitnessTimeUneven(block) ? ' block-time-uneven' : '');
 
     div.innerHTML = `
         <div class="block-main-content" data-index="${index + 1}">
             <span class="block-name">${escapeHtml(block.name)}${badgeHtml}</span>
-            <span class="block-time">${escapeHtml(block.time)}</span>
+            <span class="${timeClass}">${escapeHtml(blockTimeDisplay(block))}</span>
         </div>
         <div class="block-controls">
             <button class="block-move block-move-up" title="Move Up"${index === 0 ? ' disabled' : ''}>${ICON_CHEVRON_UP}</button>

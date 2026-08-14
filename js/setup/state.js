@@ -1,15 +1,14 @@
+// blocks/nextId/globalWitnessMode start empty — main.js always overwrites
+// them before the first render, either from a restored session or (with
+// nothing to restore) by loading the VLRE preset, so there's no scaffold
+// left sitting here to fall out of sync with either of those.
 export const state = {
-    blocks: [
-        { id: 1, name: "Opening Statement", time: "05:00", linked: null, witnesses: [] },
-        { id: 2, name: "Direct Examination", time: "25:00", linked: 3, witnesses: [] },
-        { id: 3, name: "Cross Examination", time: "20:00", linked: 2, witnesses: [] },
-        { id: 4, name: "Closing Argument", time: "05:00", linked: null, witnesses: [] }
-    ],
+    blocks: [],
     // Blocks AND witnesses share this one counter (not just blocks) — a
     // witness's `linked` id needs to be resolved without knowing in advance
     // whether it points at a block or a witness, so the two id spaces must
     // never collide.
-    nextId: 5,
+    nextId: 1,
     globalWitnessMode: 'allocated',
     currentEditingId: null
 };

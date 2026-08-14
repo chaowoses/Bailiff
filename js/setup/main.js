@@ -5,6 +5,8 @@ import { updateLinkVisibility, renderBlocks } from './blocks.js';
 import { renderSavedTrials } from './saved-trials.js';
 import { renderPresets, loadPreset } from './presets.js';
 import { FAMOUS_CASES } from './cases.js';
+import { witnessSideTotals, formatSeconds } from './witnesses.js';
+import { showDeleteConfirm } from './dialogs.js';
 
 // witness-copy.js and import.js wire up their own DOM event listeners at
 // module-evaluation time and are never imported by any other module (unlike
@@ -14,12 +16,19 @@ import { FAMOUS_CASES } from './cases.js';
 import './witness-copy.js';
 import './import.js';
 
-document.getElementById("start-trial-btn").addEventListener("click", () => {
-    if (state.blocks.length === 0) {
-        alert('Please add at least one block before starting the trial.');
-        return;
-    }
+// Each side gets its own copy of a witness-bearing block's Time as its own
+// starting budget (see witnessSideTotals in witnesses.js) — if the two
+// sides' witnesses don't add up to the same total, one side is either
+// short-changed or padded, so catch it here rather than mid-trial.
+function findUnevenAllocatedBlocks() {
+    if (state.globalWitnessMode !== 'allocated') return [];
+    return state.blocks
+        .filter(b => b.witnesses && b.witnesses.length)
+        .map(b => ({ block: b, totals: witnessSideTotals(b.witnesses) }))
+        .filter(({ totals }) => !totals.even);
+}
 
+function startTrial() {
     const leftTeam = pNameInput.value || 'Plaintiff';
     const rightTeam = dNameInput.value || 'Defense';
     const trMode = timedRulingToggle.checked;
@@ -35,6 +44,31 @@ document.getElementById("start-trial-btn").addEventListener("click", () => {
     clearSetupSession();
     sessionStorage.removeItem('bailiff_timer_session');
     window.location.href = `timers.html?${params.toString()}`;
+}
+
+document.getElementById("start-trial-btn").addEventListener("click", () => {
+    if (state.blocks.length === 0) {
+        alert('Please add at least one block before starting the trial.');
+        return;
+    }
+
+    const uneven = findUnevenAllocatedBlocks();
+    if (uneven.length > 0) {
+        const names = uneven.map(({ block, totals }) =>
+            '"' + block.name + '" (P: ' + formatSeconds(totals.left) + ', D: ' + formatSeconds(totals.right) + ')'
+        ).join(', ');
+        showDeleteConfirm(
+            'Uneven Witness Times',
+            'Plaintiff and Defense witness times don’t match in ' + names + '. Each side gets the same block budget, so the longer side may run out of time. Go back and fix it, or start anyway.',
+            startTrial,
+            'Start Anyway',
+            null,
+            'confirm-leave'
+        );
+        return;
+    }
+
+    startTrial();
 });
 
 // Info dialogs

@@ -1,3 +1,5 @@
+import { parseTime, formatTime } from '../shared/time.js';
+
 // Session persistence for page reload resilience
 const TS_SESSION_KEY = 'bailiff_timer_session';
 
@@ -80,10 +82,23 @@ function initWitnessRuntime(t, team) {
     return (t.witnesses || []).filter(w => w.side === team).map(w => ({ ...w, remainingSeconds: null, elapsedSeconds: 0, stopped: false }));
 }
 
+// A witness-bearing block's Allocated-mode budget is that team's own
+// witnesses added up — read directly off the template's witnesses rather
+// than trusting a single shared `.time` field, since the setup screen only
+// ever stores one side's total there (see witnessSideTotals in
+// setup/witnesses.js) and the two sides' real totals may not match if the
+// user chose to start anyway despite the uneven-times warning. Each team's
+// own block genuinely gets its own budget this way, whether even or not.
+function teamBlockTime(t, team) {
+    if (witnessMode !== 'allocated' || !t.witnesses || !t.witnesses.length) return t.time;
+    const secs = t.witnesses.filter(w => w.side === team).reduce((sum, w) => sum + parseTime(w.time), 0);
+    return formatTime(secs);
+}
+
 // Create blocks for both teams
 let blocks = {
-    left: blockTemplates.map(t => ({ ...t, team: 'left', remainingSeconds: null, stopped: false, witnesses: initWitnessRuntime(t, 'left') })),
-    right: blockTemplates.map(t => ({ ...t, team: 'right', remainingSeconds: null, stopped: false, witnesses: initWitnessRuntime(t, 'right') }))
+    left: blockTemplates.map(t => ({ ...t, time: teamBlockTime(t, 'left'), team: 'left', remainingSeconds: null, stopped: false, witnesses: initWitnessRuntime(t, 'left') })),
+    right: blockTemplates.map(t => ({ ...t, time: teamBlockTime(t, 'right'), team: 'right', remainingSeconds: null, stopped: false, witnesses: initWitnessRuntime(t, 'right') }))
 };
 
 // Restore saved timer progress if resuming

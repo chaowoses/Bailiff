@@ -154,16 +154,51 @@ document.getElementById('witness-link-overlay').addEventListener('click', (e) =>
     if (e.target === document.getElementById('witness-link-overlay')) closeWitnessLinkDialog();
 });
 
-// Sum of "mm:ss" witness times, formatted the same way. Used to drive the
-// block's own time field in Allocated mode (see renderWitnessSection).
-export function sumWitnessTimes(witnesses) {
-    const totalSecs = (witnesses || []).reduce((sum, w) => {
+function witnessSecondsSum(witnesses) {
+    return (witnesses || []).reduce((sum, w) => {
         const parts = (w.time || '00:00').split(':').map(Number);
         return sum + (parts[0] || 0) * 60 + (parts[1] || 0);
     }, 0);
+}
+
+export function formatSeconds(totalSecs) {
     const mins = Math.floor(totalSecs / 60);
     const secs = totalSecs % 60;
     return String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+}
+
+// Each side runs its own independent clock for a witness-bearing block at
+// trial time (see initWitnessRuntime in timers/state.js — every team gets
+// its own copy of block.time as its own starting budget), so the block's
+// Allocated-mode Time has to be ONE side's witness total, not both sides
+// added together — summing both would double it. The two sides are meant
+// to mirror each other (see the VLRE preset and Copy Witnesses' opposing
+// mode); when they don't, `even` is false and callers surface both totals
+// instead of silently picking one — see allocatedTimeInputValue and the
+// pre-flight check in main.js.
+export function witnessSideTotals(witnesses) {
+    const left = witnessSecondsSum((witnesses || []).filter(w => w.side === 'left'));
+    const right = witnessSecondsSum((witnesses || []).filter(w => w.side === 'right'));
+    return { left, right, even: left === right };
+}
+
+// Drives the block card's name turning red — see updateBlockTimeDisplay /
+// createBlockElement in blocks.js, both of which need this same check to
+// stay in sync live as witness times change.
+export function isWitnessTimeUneven(block) {
+    if (state.globalWitnessMode !== 'allocated') return false;
+    if (!block.witnesses || !block.witnesses.length) return false;
+    return !witnessSideTotals(block.witnesses).even;
+}
+
+// What the (disabled, Allocated-mode) block Time field displays: the
+// shared per-side total when both sides match, or both totals spelled out
+// when they don't, so the mismatch is visible right where the time would
+// otherwise be.
+function allocatedTimeInputValue(totals) {
+    return totals.even
+        ? formatSeconds(totals.left)
+        : ('P: ' + formatSeconds(totals.left) + ' | D: ' + formatSeconds(totals.right));
 }
 
 // Keeps the block's own time in sync with its witnesses in Allocated mode,
@@ -172,8 +207,9 @@ export function sumWitnessTimes(witnesses) {
 // focus mid-keystroke.
 export function syncAllocatedBlockTime(block) {
     if (state.globalWitnessMode !== 'allocated' || !block.witnesses || !block.witnesses.length) return;
-    block.time = sumWitnessTimes(block.witnesses);
-    if (state.currentEditingId === block.id) editTimeInput.value = block.time;
+    const totals = witnessSideTotals(block.witnesses);
+    block.time = formatSeconds(totals.left);
+    if (state.currentEditingId === block.id) editTimeInput.value = allocatedTimeInputValue(totals);
     updateBlockTimeDisplay(block);
 }
 
@@ -184,10 +220,105 @@ export function applyGlobalWitnessMode() {
     if (state.globalWitnessMode !== 'allocated') return;
     state.blocks.forEach(b => {
         if (b.witnesses && b.witnesses.length) {
-            b.time = sumWitnessTimes(b.witnesses);
+            b.time = formatSeconds(witnessSideTotals(b.witnesses).left);
         }
     });
 }
+
+// ===== RENAME PROPAGATION =====
+// Renaming a witness (e.g. correcting a typo, or updating "Plaintiff
+// Witness 1" to a real name) commonly needs to happen everywhere that same
+// person appears — most often their Direct Examination and Cross
+// Examination entries. Offered once, on blur, rather than live on every
+// keystroke.
+let witnessRenameMatches = [];
+let witnessRenameSelectedIds = new Set();
+let witnessRenameNewName = '';
+
+function maybeOfferWitnessRename(witness, originalName) {
+    const oldName = (originalName || '').trim();
+    const newName = (witness.name || '').trim();
+    if (!oldName || !newName || oldName.toLowerCase() === newName.toLowerCase()) return;
+
+    const matches = [];
+    state.blocks.forEach(b => {
+        (b.witnesses || []).forEach(w => {
+            if (w.id === witness.id) return;
+            if ((w.name || '').trim().toLowerCase() === oldName.toLowerCase()) {
+                matches.push({ witness: w, block: b });
+            }
+        });
+    });
+    if (matches.length === 0) return;
+
+    openWitnessRenameDialog(oldName, newName, matches);
+}
+
+function renderWitnessRenameList() {
+    const listEl = document.getElementById('witness-rename-list');
+    listEl.innerHTML = '';
+
+    witnessRenameMatches.forEach(({ witness, block }) => {
+        const row = document.createElement('div');
+        row.className = 'witness-copy-pick-row';
+        row.classList.toggle('selected', witnessRenameSelectedIds.has(witness.id));
+
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = witness.name;
+        const blockSpan = document.createElement('span');
+        blockSpan.className = 'witness-copy-row-time';
+        blockSpan.textContent = block.name;
+        row.appendChild(nameSpan);
+        row.appendChild(blockSpan);
+
+        row.addEventListener('click', () => {
+            if (witnessRenameSelectedIds.has(witness.id)) witnessRenameSelectedIds.delete(witness.id);
+            else witnessRenameSelectedIds.add(witness.id);
+            renderWitnessRenameList();
+        });
+        listEl.appendChild(row);
+    });
+
+    // Deselecting everything reads as "never mind, none of these" if the
+    // button still says Rename Selected but does nothing — treat empty
+    // selection as "rename all" instead, both in label and behavior.
+    document.getElementById('witness-rename-confirm').textContent =
+        witnessRenameSelectedIds.size === 0 ? 'Rename All' : 'Rename Selected';
+}
+
+function openWitnessRenameDialog(oldName, newName, matches) {
+    witnessRenameMatches = matches;
+    witnessRenameNewName = newName;
+    witnessRenameSelectedIds = new Set();
+
+    document.getElementById('witness-rename-old-name').textContent = oldName;
+    document.getElementById('witness-rename-new-name').textContent = newName;
+
+    renderWitnessRenameList();
+    document.getElementById('witness-rename-overlay').classList.remove('hidden');
+}
+
+function closeWitnessRenameDialog() {
+    document.getElementById('witness-rename-overlay').classList.add('hidden');
+    witnessRenameMatches = [];
+    witnessRenameSelectedIds = new Set();
+}
+
+document.getElementById('witness-rename-skip').addEventListener('click', closeWitnessRenameDialog);
+
+document.getElementById('witness-rename-overlay').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('witness-rename-overlay')) closeWitnessRenameDialog();
+});
+
+document.getElementById('witness-rename-confirm').addEventListener('click', () => {
+    const renameAll = witnessRenameSelectedIds.size === 0;
+    witnessRenameMatches.forEach(({ witness }) => {
+        if (renameAll || witnessRenameSelectedIds.has(witness.id)) witness.name = witnessRenameNewName;
+    });
+    closeWitnessRenameDialog();
+    renderBlocks();
+    saveSetupSession();
+});
 
 export function witnessSideName(side) {
     return side === 'left' ? (pNameInput.value || 'Plaintiff') : (dNameInput.value || 'Defense');
@@ -208,8 +339,9 @@ export function renderWitnessSection(block) {
     // against it — so it stays editable.
     editTimeInput.disabled = derivedTime;
     if (derivedTime) {
-        block.time = sumWitnessTimes(witnesses);
-        editTimeInput.value = block.time;
+        const totals = witnessSideTotals(witnesses);
+        block.time = formatSeconds(totals.left);
+        editTimeInput.value = allocatedTimeInputValue(totals);
     }
 
     // A witness-bearing block links per-witness now (see the witness rows'
@@ -262,9 +394,19 @@ export function renderWitnessGroup(block, side, listEl) {
         nameInput.autocomplete = 'off';
         nameInput.placeholder = 'Witness name';
         nameInput.value = w.name;
+        let originalName = w.name;
+        nameInput.addEventListener('focus', () => {
+            originalName = w.name;
+        });
         nameInput.addEventListener('input', () => {
             w.name = nameInput.value;
             saveSetupSession();
+        });
+        nameInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') nameInput.blur();
+        });
+        nameInput.addEventListener('blur', () => {
+            maybeOfferWitnessRename(w, originalName);
         });
 
         const timeInput = document.createElement('input');

@@ -786,6 +786,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 4px;
+    margin-bottom: 14px;
 }
 
 .witness-copy-checklist-empty {
@@ -1003,6 +1004,11 @@ body {
     flex-shrink: 0;
     color: #c9a84c;
     opacity: 0.8;
+}
+
+.block-time-uneven {
+    color: #c07a7a;
+    opacity: 1;
 }
 
 .block-linked-badge {

@@ -350,6 +350,19 @@
         </div>
     </div>
 
+    <!-- Rename Witnesses Everywhere Dialog -->
+    <div class="confirm-overlay hidden" id="witness-rename-overlay">
+        <div class="confirm-dialog preset-dialog witness-link-dialog">
+            <h3>Rename Other Witnesses?</h3>
+            <p><strong id="witness-rename-old-name"></strong> was renamed to <strong id="witness-rename-new-name"></strong>. Rename these witnesses of the same name too?</p>
+            <div class="witness-copy-checklist" id="witness-rename-list"></div>
+            <div class="confirm-actions">
+                <button class="confirm-btn confirm-cancel" id="witness-rename-skip">Just This One</button>
+                <button class="confirm-btn confirm-save" id="witness-rename-confirm">Rename Selected</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Timed Ruling Mode Info Dialog -->
     <div class="confirm-overlay hidden" id="tr-mode-info-overlay">
         <div class="confirm-dialog">
