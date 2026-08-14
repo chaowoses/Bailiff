@@ -5,11 +5,21 @@
 // versions since their last visit.
 const CHANGELOG = [
     {
+        version: 'v3.1.2',
+        date: '08/13/26',
+        summary: 'Fix manual time controls not syncing the block total.',
+        bullets: [
+            'Adjusting a witness\'s time with the manual controls (+15/+30/-15/-30, custom Add/Set/Sub, Reset) now updates the block\'s real total right away, instead of only catching up once the clock ticks or a ruling deducts from it',
+            'In Total Time mode, granting time to a witness now actually adds to the case\'s real time remaining instead of just changing how much that witness appears to have used.',
+            'A hint now explains why the elapsed number above moves the opposite way'
+        ]
+    },
+    {
         version: 'v3.1.1',
         date: '08/13/26',
         summary: 'Next Block now follows actual trial order.',
         bullets: [
-            'Next Block used to run through one side\'s whole schedule before moving to the other. It now alternates sides at each step — including witness by witness within a block (Plaintiff Witness 1, Defense Witness 1, Plaintiff Witness 2...) — before moving down to the next section, matching how a trial actually runs'
+            'Next Block used to run through one side\'s whole schedule before moving to the other. It now alternates sides at each step, including witness by witness within a block (Plaintiff Witness 1, Defense Witness 1, Plaintiff Witness 2...), before moving down to the next section, matching how a trial actually runs'
         ]
     },
     {

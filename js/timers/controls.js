@@ -1,7 +1,8 @@
 import { parseTime, formatTime } from '../shared/time.js';
 import {
     countdown, currentBlockName, timeLabel, secondaryTimer, startBtn, stopBtn, nextBtn,
-    resetBtn, add15Btn, add30Btn, sub15Btn, sub30Btn, customTimeInput, addCustomBtn, setCustomBtn, subCustomBtn, clearCustomBtn
+    resetBtn, add15Btn, add30Btn, sub15Btn, sub30Btn, customTimeInput, addCustomBtn, setCustomBtn, subCustomBtn, clearCustomBtn,
+    adjustHint
 } from './dom.js';
 import { state, saveTimerSession } from './state.js';
 import {
@@ -56,6 +57,14 @@ export function loadBlock() {
     updateCountdownColor();
     timeLabel.textContent = stopwatch ? 'Elapsed Time' : 'Time Remaining';
     secondaryTimer.classList.remove('visible');
+    // In Total Time mode the number above is elapsed (spent) time, not the
+    // real budget — so the +/- buttons deliberately move it opposite to
+    // their label (a "+" grant winds elapsed back) while the actual case
+    // clock (the superblock) moves the intuitive direction. Spell that out
+    // since it's the opposite of every other mode.
+    adjustHint.textContent = stopwatch
+        ? "These buttons adjust the case's real time left; per-witness elapsed time above moves the opposite way to match."
+        : '';
 
     startBtn.style.display = 'inline-block';
     startBtn.textContent = state.isStopped ? 'Restart' : 'Start';
@@ -255,11 +264,47 @@ export function nextBlock() {
     saveTimerSession();
 }
 
+// A manual adjustment to the current witness must also move the block's
+// derived total — the real budget — the same as a ruling deduction does
+// (see ruling.js), otherwise the superblock header drifts from the actual
+// remaining time whenever it's changed outside of the live countdown tick.
+// `delta` here is always "seconds granted to the current speaker" (positive
+// = more time left), so it applies to the superblock the same way in every
+// mode, regardless of which direction it happens to move the entity's own
+// on-screen number (see adjustTime).
+function adjustSuperblock(delta) {
+    if (!delta) return;
+    const block = getCurrentParentBlock();
+    if (block && block.witnesses && block.witnesses.length) {
+        block.remainingSeconds = getBlockRemaining(block) + delta;
+    }
+}
+
+// In every mode, positive `seconds` means "grant the current speaker more
+// time" — negative means take time away. For a plain/Allocated entity that
+// directly is its own remaining time, so it's a normal += . For a Total
+// Time witness, the on-screen number is time already spent (elapsed), so
+// granting time means winding that counter back rather than forward — the
+// real shared budget (the superblock) gains only however much elapsed time
+// actually got wound back. Elapsed can't go below 0, so a grant larger than
+// what's actually elapsed clamps there — and the superblock must only be
+// credited for the real amount that moved, not the nominal button size,
+// or it would be credited with time that was never really spent.
 export function adjustTime(seconds) {
     const entity = getCurrentTimeable();
     if (entity) {
-        state.timeRemaining += seconds;
-        setEntityValue(entity, isCurrentStopwatch(), state.timeRemaining);
+        const stopwatch = isCurrentStopwatch();
+        let granted = seconds;
+        if (stopwatch) {
+            const previous = state.timeRemaining;
+            state.timeRemaining = Math.max(0, previous - seconds);
+            entity.elapsedSeconds = state.timeRemaining;
+            granted = previous - state.timeRemaining;
+        } else {
+            state.timeRemaining += seconds;
+            setEntityValue(entity, false, state.timeRemaining);
+        }
+        adjustSuperblock(granted);
 
         // Update originalTimeBeforePause if paused
         if (state.isPaused) {
@@ -294,8 +339,13 @@ resetBtn.addEventListener('click', () => {
     const entity = getCurrentTimeable();
     const stopwatch = isCurrentStopwatch();
     if (entity) {
+        const previous = getEntityValue(entity, stopwatch);
         state.timeRemaining = stopwatch ? 0 : parseTime(entity.time);
         setEntityValue(entity, stopwatch, state.timeRemaining);
+        // Granted seconds: for elapsed time, winding it down hands that much
+        // back to the superblock; for remaining time, the new value directly
+        // is the grant (see adjustTime).
+        adjustSuperblock(stopwatch ? previous - state.timeRemaining : state.timeRemaining - previous);
         entity.stopped = false;
 
         // Update originalTimeBeforePause if paused
@@ -335,10 +385,13 @@ setCustomBtn.addEventListener('click', () => {
 
     const seconds = parseTime(customTimeInput.value);
     const entity = getCurrentTimeable();
+    const stopwatch = isCurrentStopwatch();
 
     if (entity) {
+        const previous = getEntityValue(entity, stopwatch);
         state.timeRemaining = seconds;
-        setEntityValue(entity, isCurrentStopwatch(), state.timeRemaining);
+        setEntityValue(entity, stopwatch, state.timeRemaining);
+        adjustSuperblock(stopwatch ? previous - state.timeRemaining : state.timeRemaining - previous);
 
         // Update originalTimeBeforePause if paused
         if (state.isPaused) {

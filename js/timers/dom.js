@@ -9,6 +9,7 @@ export const stopBtn = document.getElementById('stop-btn');
 export const nextBtn = document.getElementById('next-btn');
 export const timerControls = document.getElementById('timer-controls');
 export const resetBtn = document.getElementById('reset-btn');
+export const adjustHint = document.getElementById('adjust-hint');
 export const add15Btn = document.getElementById('add-15-btn');
 export const add30Btn = document.getElementById('add-30-btn');
 export const sub15Btn = document.getElementById('sub-15-btn');

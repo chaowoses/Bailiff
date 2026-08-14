@@ -506,6 +506,18 @@ body {
     gap: 4px;
 }
 
+.adjust-hint {
+    font-size: 0.68rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #8a7a6a;
+    text-align: center;
+    padding: 0 16px;
+}
+
+.adjust-hint:empty {
+    display: none;
+}
+
 .quick-btn {
     display: inline-flex;
     align-items: center;
