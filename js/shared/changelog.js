@@ -5,6 +5,14 @@
 // versions since their last visit.
 const CHANGELOG = [
     {
+        version: 'v3.1.1',
+        date: '08/13/26',
+        summary: 'Next Block now follows actual trial order.',
+        bullets: [
+            'Next Block used to run through one side\'s whole schedule before moving to the other. It now alternates sides at each step — including witness by witness within a block (Plaintiff Witness 1, Defense Witness 1, Plaintiff Witness 2...) — before moving down to the next section, matching how a trial actually runs'
+        ]
+    },
+    {
         version: 'v3.1.0',
         date: '08/13/26',
         summary: 'Round out witnesses and presets.',

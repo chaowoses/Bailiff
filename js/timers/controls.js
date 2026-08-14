@@ -62,10 +62,7 @@ export function loadBlock() {
     startBtn.className = 'bench-btn bench-btn-primary';
     stopBtn.style.display = 'none';
 
-    const currentIndex = state.blocks[state.currentTeam].findIndex(b => b.id === state.currentBlockId);
-    const hasNextWitness = hasWitnesses &&
-        block.witnesses.findIndex(w => w.id === state.currentWitnessId) < block.witnesses.length - 1;
-    nextBtn.style.display = (hasNextWitness || currentIndex < state.blocks[state.currentTeam].length - 1) ? 'inline-block' : 'none';
+    nextBtn.style.display = nextBlockTarget() ? 'inline-block' : 'none';
 
     const pauseButtons = document.querySelectorAll('.pause-btn');
     pauseButtons.forEach(btn => btn.remove());
@@ -214,25 +211,46 @@ export function fullStop() {
     saveTimerSession();
 }
 
-export function nextBlock() {
-    // A witness-bearing block is exhausted witness-by-witness before moving
-    // on to the next actual block.
-    const block = state.blocks[state.currentTeam].find(b => b.id === state.currentBlockId);
-    if (block && block.witnesses && block.witnesses.length) {
-        const wIndex = block.witnesses.findIndex(w => w.id === state.currentWitnessId);
-        if (wIndex !== -1 && wIndex < block.witnesses.length - 1) {
-            fullStop();
-            selectBlock(block.id, state.currentTeam, block.witnesses[wIndex + 1].id);
-            saveTimerSession();
-            return;
-        }
-    }
+// Both teams' block lists are built from the same ordered block templates
+// (see timers/state.js), so index i in 'left' and index i in 'right' are
+// the same row — e.g. both sides' Direct Examination. Within a row, a
+// witness-bearing block's witnesses are its "steps"; a plain block (no
+// witnesses) is just a single step, so the same zig-zag logic covers both.
+// Actual trial order alternates sides at each step (e.g. Plaintiff Witness
+// 1, then Defense Witness 1, then Plaintiff Witness 2...) before moving to
+// the next row, rather than exhausting one side's whole row — or one whole
+// side's schedule — first.
+function rowSteps(team, rowIndex) {
+    const block = state.blocks[team][rowIndex];
+    if (!block) return null;
+    return (block.witnesses && block.witnesses.length) ? block.witnesses.map(w => w.id) : [null];
+}
 
-    const currentIndex = state.blocks[state.currentTeam].findIndex(b => b.id === state.currentBlockId);
-    if (currentIndex < state.blocks[state.currentTeam].length - 1) {
-        const next = state.blocks[state.currentTeam][currentIndex + 1];
+function stepAt(team, rowIndex, stepIndex) {
+    const steps = rowSteps(team, rowIndex);
+    if (!steps || stepIndex < 0 || stepIndex >= steps.length) return null;
+    return { team, id: state.blocks[team][rowIndex].id, witnessId: steps[stepIndex] };
+}
+
+function nextBlockTarget() {
+    const rowIndex = state.blocks[state.currentTeam].findIndex(b => b.id === state.currentBlockId);
+    const stepIndex = rowSteps(state.currentTeam, rowIndex).indexOf(state.currentWitnessId);
+
+    const next = state.currentTeam === 'left'
+        ? stepAt('right', rowIndex, stepIndex) || stepAt('left', rowIndex, stepIndex + 1) || stepAt('right', rowIndex, stepIndex + 1)
+        : stepAt('left', rowIndex, stepIndex + 1) || stepAt('right', rowIndex, stepIndex + 1);
+    if (next) return next;
+
+    // Both sides' steps in this row are exhausted — drop to the first step
+    // of the next row (always starts on the left).
+    return stepAt('left', rowIndex + 1, 0);
+}
+
+export function nextBlock() {
+    const target = nextBlockTarget();
+    if (target) {
         fullStop();
-        selectBlock(next.id, state.currentTeam);
+        selectBlock(target.id, target.team, target.witnessId);
     }
     saveTimerSession();
 }
