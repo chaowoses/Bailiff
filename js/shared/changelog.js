@@ -5,6 +5,18 @@
 // versions since their last visit.
 const CHANGELOG = [
     {
+        version: 'v3.2.0',
+        date: '08/14/26',
+        summary: 'Track the trial clock, not just the block clocks.',
+        bullets: [
+            'New Trial Clock bar at the bottom of the timer page shows the current time and elapsed time since the trial started',
+            'Set the start time once (defaults to now, editable in the moment). after confirming, it locks in for the rest of the trial',
+            'Elapsed time turns red past 180 minutes, the AMTA all-loss-time threshold',
+            'Start time is saved with the session, so it survives autosave recovery and resuming a saved trial',
+            'New built-in AMTA preset, alongside VLRE'
+        ]
+    },
+    {
         version: 'v3.1.2',
         date: '08/13/26',
         summary: 'Fix manual time controls not syncing the block total.',

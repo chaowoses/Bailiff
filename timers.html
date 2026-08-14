@@ -128,9 +128,59 @@
         </div>
     </div>
 
-        <footer>
-            <p>Copyright &copy; 2026 Josh Felder (Chaos). Licensed under the <a href="https://opensource.org/licenses/MIT" target="_blank">MIT License</a><span class="version-footer" id="version-footer"></span></p>
-        </footer>
+        <div class="bottom-bar" id="bottom-bar">
+            <div class="trial-clock-bar" id="trial-clock-bar">
+                <div class="trial-clock-row">
+                    <span class="trial-clock-label">Start Time</span>
+                    <button type="button" class="trial-clock-value trial-clock-start" id="trial-clock-start">Not Set — Click to Set</button>
+                </div>
+                <div class="trial-clock-row">
+                    <span class="trial-clock-label">Current Time</span>
+                    <span class="trial-clock-value" id="trial-clock-current">--:--:-- --</span>
+                </div>
+                <div class="trial-clock-row">
+                    <span class="trial-clock-label">Elapsed Time</span>
+                    <span class="trial-clock-value" id="trial-clock-elapsed">No start time set</span>
+                </div>
+            </div>
+
+            <footer>
+                <p>Copyright &copy; 2026 Josh Felder (Chaos). Licensed under the <a href="https://opensource.org/licenses/MIT" target="_blank">MIT License</a><span class="version-footer" id="version-footer"></span></p>
+            </footer>
+        </div>
+
+    <!-- Set Start Time Dialog -->
+    <div class="confirm-overlay hidden" id="start-time-overlay">
+        <div class="confirm-dialog preset-dialog">
+            <h3>Set Start Time</h3>
+            <p>The definition of start time may vary based on competition rules. Once set, it cannot be changed for this trial.</p>
+            <div class="start-time-fields">
+                <input type="text" id="start-time-hh" class="start-time-input" maxlength="2" inputmode="numeric" autocomplete="off" placeholder="HH">
+                <span class="start-time-colon">:</span>
+                <input type="text" id="start-time-mm" class="start-time-input" maxlength="2" inputmode="numeric" autocomplete="off" placeholder="MM">
+                <select id="start-time-ampm" class="start-time-ampm">
+                    <option value="AM">AM</option>
+                    <option value="PM">PM</option>
+                </select>
+            </div>
+            <div class="confirm-actions">
+                <button class="confirm-btn confirm-cancel" id="start-time-cancel">Cancel</button>
+                <button class="confirm-btn confirm-save" id="start-time-confirm">Set Start Time</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Start Time Dialog -->
+    <div class="confirm-overlay hidden" id="start-time-confirm-overlay">
+        <div class="confirm-dialog preset-dialog">
+            <h3>Confirm Start Time</h3>
+            <p>Set the start time to <strong id="start-time-confirm-value"></strong>? This cannot be changed for this trial.</p>
+            <div class="confirm-actions">
+                <button class="confirm-btn confirm-cancel" id="start-time-confirm-cancel">Cancel</button>
+                <button class="confirm-btn confirm-save" id="start-time-confirm-confirm">Confirm</button>
+            </div>
+        </div>
+    </div>
 
     <script type="module" src="js/timers/main.js"></script>
 </body>

@@ -744,6 +744,13 @@ body {
     transform: scale(0.96);
 }
 
+.confirm-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
 /* ===== SAVE DESCRIPTION FIELD ===== */
 .save-desc-field {
     text-align: left;
@@ -1039,12 +1046,81 @@ body {
     }
 }
 
-/* ===== FOOTER ===== */
-footer {
+/* ===== BOTTOM BAR (trial clock + footer) ===== */
+.bottom-bar {
     position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
+    z-index: 1000;
+}
+
+/* ===== TRIAL CLOCK ===== */
+.trial-clock-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 4px 20px;
+    background: #1e1814;
+    border-top: 1px solid #2a2018;
+    flex-wrap: wrap;
+}
+
+.trial-clock-row {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+}
+
+.trial-clock-label {
+    font-size: 0.6rem;
+    font-weight: 600;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #5a4a3a;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.trial-clock-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: #8a7a6a;
+    letter-spacing: 0.01em;
+}
+
+button.trial-clock-value {
+    background: none;
+    border: none;
+    padding: 1px 4px;
+    cursor: pointer;
+    color: #c9a84c;
+    border-radius: 2px;
+    transition: color 0.2s, background 0.2s;
+}
+
+button.trial-clock-value:hover {
+    background: #2a2018;
+    color: #d4af37;
+}
+
+button.trial-clock-value.trial-clock-locked {
+    cursor: default;
+    color: #8a7a6a;
+}
+
+button.trial-clock-value.trial-clock-locked:hover {
+    background: none;
+    color: #8a7a6a;
+}
+
+.trial-clock-value.trial-clock-overtime {
+    color: #cc3333;
+}
+
+/* ===== FOOTER ===== */
+footer {
     text-align: center;
     padding: 6px 20px;
     color: #6a5a4a;
@@ -1052,7 +1128,6 @@ footer {
     font-family: Georgia, 'Times New Roman', Times, serif;
     background: #1a1410;
     border-top: 1px solid #2a2018;
-    z-index: 1000;
 }
 
 footer a {
@@ -1073,4 +1148,49 @@ footer a:hover {
     letter-spacing: 0.02em;
 }
 
+/* ===== SET START TIME DIALOG ===== */
+.start-time-fields {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin: 14px 0;
+}
+
+.start-time-input {
+    width: 48px;
+    padding: 8px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1rem;
+    font-weight: 600;
+    text-align: center;
+    background: #1a1410;
+    border: 1px solid #3a2a20;
+    border-radius: 3px;
+    color: #f0e8d8;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.start-time-input:focus { border-color: #c9a84c; }
+
+.start-time-colon {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #7a6a5a;
+}
+
+.start-time-ampm {
+    padding: 8px 10px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: #1a1410;
+    border: 1px solid #3a2a20;
+    border-radius: 3px;
+    color: #f0e8d8;
+    outline: none;
+    cursor: pointer;
+}
 

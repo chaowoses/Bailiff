@@ -21,7 +21,8 @@ export function startAutosave() {
             timerState: {
                 blocks: state.blocks,
                 currentBlockId: state.currentBlockId,
-                currentTeam: state.currentTeam
+                currentTeam: state.currentTeam,
+                startTime: state.startTime
             }
         };
         localStorage.setItem('bailiff_autosave', JSON.stringify(autosave));
@@ -81,7 +82,8 @@ document.getElementById('confirm-save-exit').addEventListener('click', () => {
             blocks: state.blocks,
             currentBlockId: state.currentBlockId,
             currentTeam: state.currentTeam,
-            currentWitnessId: state.currentWitnessId
+            currentWitnessId: state.currentWitnessId,
+            startTime: state.startTime
         }
     };
     if (existingIdx !== -1) {

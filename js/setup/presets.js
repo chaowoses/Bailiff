@@ -58,9 +58,49 @@ const VLRE_PRESET = {
     blocks: JSON.parse(JSON.stringify(DEFAULT_BLOCKS))
 };
 
+// Same reasoning as DEFAULT_BLOCKS above: unlinked, Total Time mode, blocks
+// carry the real budget while witnesses just count up.
+const AMTA_BLOCKS = [
+    { id: 1, name: "Opening & Closing", time: "14:00", linked: null },
+    {
+        id: 2, name: "Direct Examination", time: "25:00", linked: null,
+        witnesses: [
+            { id: 5, name: "Atlas Hartley", time: "08:20", linked: 11, side: "left" },
+            { id: 6, name: "Riley Kaye", time: "08:20", linked: 12, side: "left" },
+            { id: 7, name: "Taren Rivera", time: "08:20", linked: 13, side: "left" },
+            { id: 8, name: "Micah Lin", time: "08:20", linked: 14, side: "right" },
+            { id: 9, name: "Grey Marlowe", time: "08:20", linked: 15, side: "right" },
+            { id: 10, name: "Charlie Martin", time: "08:20", linked: 16, side: "right" }
+        ]
+    },
+    {
+        id: 3, name: "Cross Examination", time: "25:00", linked: null,
+        witnesses: [
+            { id: 11, name: "Atlas Hartley", time: "08:20", linked: 5, side: "right" },
+            { id: 12, name: "Riley Kaye", time: "08:20", linked: 6, side: "right" },
+            { id: 13, name: "Taren Rivera", time: "08:20", linked: 7, side: "right" },
+            { id: 14, name: "Micah Lin", time: "08:20", linked: 8, side: "left" },
+            { id: 15, name: "Grey Marlowe", time: "08:20", linked: 9, side: "left" },
+            { id: 16, name: "Charlie Martin", time: "08:20", linked: 10, side: "left" }
+        ]
+    }
+];
+
+const AMTA_PRESET = {
+    id: 'preset-amta',
+    name: 'AMTA',
+    description: 'For AMTA (American Mock Trial Association) competitions.',
+    savedAt: null,
+    builtin: true,
+    advancedMode: false,
+    timedRulingMode: false,
+    witnessMode: 'stopwatch',
+    blocks: JSON.parse(JSON.stringify(AMTA_BLOCKS))
+};
+
 // ===== PRESETS =====
 export function getPresets() {
-    const presets = [VLRE_PRESET];
+    const presets = [VLRE_PRESET, AMTA_PRESET];
     try {
         const saved = JSON.parse(localStorage.getItem(PRESETS_KEY)) || [];
         saved.forEach(p => presets.push(p));
@@ -208,7 +248,7 @@ export function loadPreset(presetId) {
 }
 
 export function deletePreset(presetId) {
-    if (presetId === 'preset-vlre') return;
+    if (presetId === 'preset-vlre' || presetId === 'preset-amta') return;
     let presets = getPresets();
     presets = presets.filter(p => p.id !== presetId);
     savePresets(presets);

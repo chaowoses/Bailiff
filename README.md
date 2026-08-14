@@ -49,7 +49,7 @@ Save progress mid-round and resume later. Autosaves every 30 seconds during a tr
 <details>
 <summary><b>Presets</b></summary>
 
-Save block configurations as reusable presets with a name and description. Comes with a built-in VLRE preset. Drag-and-drop to reorder your custom presets.
+Save block configurations as reusable presets with a name and description. Comes with built-in VLRE and AMTA presets. Drag-and-drop to reorder your custom presets.
 </details>
 
 <details>
