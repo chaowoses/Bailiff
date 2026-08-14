@@ -1,5 +1,10 @@
 import { getSavedTrials, saveSavedTrials, renderSavedTrials } from './saved-trials.js';
 import { getPresets, savePresets, renderPresets } from './presets.js';
+// import.js and case-library.js import from each other (this needs
+// getCustomCases/saveCustomCases/renderCustomCasesList/updateCasePlaceholder,
+// case-library.js needs openImportDialog) — safe circular import, same
+// reasoning as blocks.js/witnesses.js and presets.js/export.js.
+import { getCustomCases, saveCustomCases, renderCaseLibraryDialog, updateCasePlaceholder } from './case-library.js';
 
 // ===== IMPORT SAVED TRIALS =====
 function setImportTab(tab) {
@@ -176,22 +181,88 @@ function importPresets(text) {
     document.getElementById('import-dialog-overlay').classList.add('hidden');
 }
 
+// Accepts either the wrapped export format ({ cases: [...] }) or a bare array of cases.
+function extractCasesArray(parsed) {
+    if (Array.isArray(parsed)) return parsed;
+    if (parsed && typeof parsed === 'object' && Array.isArray(parsed.cases)) return parsed.cases;
+    return null;
+}
+
+function validateAndParseCasesImport(text) {
+    let parsed;
+    try {
+        parsed = JSON.parse(text);
+    } catch {
+        return { error: 'That file isn\'t valid JSON.' };
+    }
+
+    const rawCases = extractCasesArray(parsed);
+    if (rawCases === null) {
+        return { error: 'Unrecognized format. Expected a Bailiff custom cases export.' };
+    }
+    if (rawCases.length === 0) {
+        return { error: 'No cases found in this file.' };
+    }
+
+    const cases = [];
+    for (let i = 0; i < rawCases.length; i++) {
+        const c = rawCases[i];
+        if (!c || typeof c !== 'object' || Array.isArray(c)) {
+            return { error: 'Entry ' + (i + 1) + ' is not a valid case object.' };
+        }
+        if (typeof c.p !== 'string' || !c.p.trim()) {
+            return { error: 'Entry ' + (i + 1) + ' is missing a plaintiff name.' };
+        }
+        if (typeof c.d !== 'string' || !c.d.trim()) {
+            return { error: 'Entry ' + (i + 1) + ' is missing a defense name.' };
+        }
+        cases.push({ p: c.p.trim(), d: c.d.trim() });
+    }
+
+    return { cases };
+}
+
+function importCases(text) {
+    const result = validateAndParseCasesImport(text);
+    if (result.error) {
+        showImportError(result.error);
+        return;
+    }
+
+    const existing = getCustomCases();
+    const imported = result.cases.map((c, i) => ({
+        id: 'case-' + Date.now() + '-' + i,
+        p: c.p,
+        d: c.d
+    }));
+
+    saveCustomCases(existing.concat(imported));
+    renderCaseLibraryDialog();
+    updateCasePlaceholder();
+    clearImportError();
+    document.getElementById('import-dialog-overlay').classList.add('hidden');
+}
+
 // Which list an open import dialog is targeting — set by whichever
 // "Import from JSON" button opened it, read by the upload/paste handlers.
 let pendingImportType = 'trials';
 
-function openImportDialog(type) {
+export function openImportDialog(type) {
     pendingImportType = type;
     clearImportError();
     document.getElementById('import-file-input').value = '';
     document.getElementById('import-paste-input').value = '';
-    document.getElementById('import-dialog-title').textContent = type === 'presets' ? 'Import Presets' : 'Import Saved Trials';
+    document.getElementById('import-dialog-title').textContent =
+        type === 'presets' ? 'Import Presets' : type === 'cases' ? 'Import Custom Cases' : 'Import Saved Trials';
+    document.getElementById('import-paste-input').placeholder =
+        type === 'presets' ? 'Paste exported preset JSON here' : type === 'cases' ? 'Paste exported custom cases JSON here' : 'Paste exported trial JSON here';
     setImportTab('upload');
     document.getElementById('import-dialog-overlay').classList.remove('hidden');
 }
 
 function performImport(text) {
     if (pendingImportType === 'presets') importPresets(text);
+    else if (pendingImportType === 'cases') importCases(text);
     else importTrials(text);
 }
 

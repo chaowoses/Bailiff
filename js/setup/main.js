@@ -4,7 +4,7 @@ import { state, restoreSetupSession, clearSetupSession } from './state.js';
 import { updateLinkVisibility, renderBlocks } from './blocks.js';
 import { renderSavedTrials } from './saved-trials.js';
 import { renderPresets, loadPreset } from './presets.js';
-import { FAMOUS_CASES } from './cases.js';
+import { updateCasePlaceholder } from './case-library.js';
 import { witnessSideTotals, formatSeconds } from './witnesses.js';
 import { showDeleteConfirm } from './dialogs.js';
 
@@ -112,13 +112,6 @@ document.addEventListener('click', (e) => {
     }
 });
 
-function setPlaceholderCase() {
-    if (FAMOUS_CASES.length === 0) return;
-    const randomCase = FAMOUS_CASES[Math.floor(Math.random() * FAMOUS_CASES.length)];
-    pNameInput.placeholder = randomCase.p;
-    dNameInput.placeholder = randomCase.d;
-}
-
 // No saved in-progress session (first visit, or after starting/clearing a
 // trial) means there's nothing to restore — default to the VLRE preset
 // instead of leaving the bare state.js scaffold blocks in place.
@@ -133,4 +126,4 @@ if (restoreSetupSession()) {
 }
 renderSavedTrials();
 renderPresets();
-setPlaceholderCase();
+updateCasePlaceholder();

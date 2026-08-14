@@ -94,6 +94,11 @@ body {
 }
 
 /* ===== IN THE MATTER OF ===== */
+.matter-heading-row {
+    position: relative;
+    margin-bottom: 20px;
+}
+
 .matter-heading {
     text-align: center;
     font-size: 0.7rem;
@@ -101,8 +106,31 @@ body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     letter-spacing: 0.15em;
     color: #7a6a5a;
-    margin-bottom: 20px;
     text-transform: uppercase;
+}
+
+.case-library-btn {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: none;
+    border-radius: 3px;
+    background: transparent;
+    color: #5a4a3a;
+    cursor: pointer;
+    transition: color 0.2s, background 0.2s;
+}
+
+.case-library-btn:hover {
+    color: #c9a84c;
+    background: rgba(201, 168, 76, 0.08);
 }
 
 .parties {
@@ -1735,6 +1763,239 @@ body {
     font-size: 0.8rem;
 }
 
+/* ===== CASE LIBRARY DIALOG ===== */
+.case-library-dialog {
+    max-width: 560px;
+    text-align: left;
+}
+
+.case-lib-section {
+    margin-top: 18px;
+}
+
+.case-lib-section:first-of-type {
+    margin-top: 20px;
+}
+
+.case-lib-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.case-lib-section-title {
+    font-size: 0.68rem;
+    font-weight: 700;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #8a7a6a;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.case-lib-section-actions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.case-lib-btn {
+    padding: 5px 12px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    border-radius: 3px;
+    border: 1px solid #3a2a20;
+    background: transparent;
+    color: #7a6a5a;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    transition: all 0.2s;
+}
+
+.case-lib-btn:hover {
+    border-color: #5a4a3a;
+    color: #f0e8d8;
+    background: #2a2018;
+}
+
+.case-lib-btn:active { transform: scale(0.96); }
+
+.case-lib-btn-danger {
+    border-color: #5a2a2a;
+    color: #a06060;
+}
+
+.case-lib-btn-danger:hover {
+    border-color: #8a3a3a;
+    color: #f0d0d0;
+    background: #2a1818;
+}
+
+.case-lib-search {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+    font-size: 0.78rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    border-radius: 4px;
+    border: 1px solid #3a2a20;
+    background: #1a1410;
+    color: #f0e8d8;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.case-lib-search::placeholder {
+    color: #5a4a3a;
+}
+
+.case-lib-search:focus {
+    border-color: #c9a84c;
+}
+
+.case-lib-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 220px;
+    overflow-y: auto;
+    padding-right: 2px;
+}
+
+.case-lib-row {
+    display: flex;
+    align-items: center;
+    padding: 7px 10px;
+    background: #1a1410;
+    border: 1px solid #2a2018;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+}
+
+.case-lib-row:hover {
+    border-color: #5a4a3a;
+}
+
+.case-lib-row.selected {
+    background: rgba(201, 168, 76, 0.1);
+    border-color: #c9a84c;
+}
+
+.case-lib-row-text {
+    font-size: 0.75rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #5a4a3a;
+    transition: color 0.15s;
+}
+
+.case-lib-row.selected .case-lib-row-text {
+    color: #f0e8d8;
+}
+
+.case-lib-row-vs {
+    color: #c9a84c;
+    opacity: 0.6;
+    font-weight: 700;
+}
+
+.case-lib-custom-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 7px 10px;
+    background: #1a1410;
+    border: 1px solid #2a2018;
+    border-radius: 4px;
+}
+
+.case-lib-custom-row .case-lib-row-text {
+    color: #f0e8d8;
+}
+
+.case-lib-remove-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: none;
+    border-radius: 3px;
+    background: transparent;
+    color: #4a3a2a;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.case-lib-remove-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+.case-lib-remove-btn:hover {
+    color: #8b1a1a;
+    background: rgba(139, 26, 26, 0.08);
+}
+
+.case-lib-empty {
+    text-align: center;
+    font-size: 0.75rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #5a4a3a;
+    font-style: italic;
+    padding: 14px 0;
+}
+
+.case-lib-add-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.case-lib-add-row input {
+    flex: 1;
+    min-width: 0;
+    padding: 8px 10px;
+    font-size: 0.78rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    border-radius: 4px;
+    border: 1px solid #3a2a20;
+    background: #1a1410;
+    color: #f0e8d8;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.case-lib-add-row input:focus {
+    border-color: #c9a84c;
+}
+
+.case-lib-add-vs {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #7a6a5a;
+    flex-shrink: 0;
+}
+
+.case-lib-btn-add {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.case-library-dialog .confirm-actions {
+    margin-top: 24px;
+}
+
 /* ===== CONFIRMATION OVERLAY (for index page) ===== */
 .confirm-overlay {
     position: fixed;
@@ -1853,8 +2114,31 @@ body {
     .edit-fields input,
     .edit-fields select,
     .preset-dialog-fields input,
-    .preset-dialog-fields textarea {
+    .preset-dialog-fields textarea,
+    .case-lib-add-row input {
         font-size: 16px;
+    }
+
+    .case-lib-section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .case-lib-add-row {
+        flex-wrap: wrap;
+    }
+
+    .case-lib-add-row input {
+        flex-basis: 100%;
+    }
+
+    .case-lib-add-vs {
+        display: none;
+    }
+
+    .case-lib-btn-add {
+        flex: 1;
     }
 
     .schedule-top {
@@ -1943,7 +2227,8 @@ body {
 
     .section-divider { margin: 20px 0; }
 
-    .matter-heading { font-size: 0.6rem; margin-bottom: 14px; }
+    .matter-heading { font-size: 0.6rem; }
+    .matter-heading-row { margin-bottom: 14px; }
 
     .party label { font-size: 0.6rem; }
 

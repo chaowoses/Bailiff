@@ -6,6 +6,11 @@ import { buildInfographicCanvas } from './infographic.js';
 // same reasoning as blocks.js/witnesses.js.
 import { getSavedTrials } from './saved-trials.js';
 import { getPresets } from './presets.js';
+// export.js and case-library.js import from each other (this needs
+// getCustomCases, case-library.js needs openCustomCasesExportDialog) — safe
+// circular import, same reasoning as blocks.js/witnesses.js and
+// presets.js/export.js.
+import { getCustomCases } from './case-library.js';
 
 // ===== EXPORT SAVED TRIALS =====
 function buildReadableExport(trials) {
@@ -115,15 +120,26 @@ function buildPresetJsonExport(presets) {
     }, null, 2);
 }
 
-// 'trial' offers all three formats (Plain Text/JSON/Image); 'preset' only
-// ever exports as JSON — a preset has no plaintiff/defense or progress to
-// put in a readable summary or docket-poster image, just a block schedule.
+function buildCasesJsonExport(cases) {
+    return JSON.stringify({
+        app: 'bailiff',
+        type: 'custom-cases',
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        cases: cases
+    }, null, 2);
+}
+
+// 'trial' offers all three formats (Plain Text/JSON/Image); 'preset' and
+// 'cases' only ever export as JSON — neither has a plaintiff/defense or
+// progress to put in a readable summary or docket-poster image, just a
+// block schedule (preset) or a flat list of case names (cases).
 let pendingExportKind = 'trial';
 let pendingExportTrialId = null;
 let pendingExportPresetId = null;
 
 function currentExportFormat() {
-    if (pendingExportKind === 'preset') return 'json';
+    if (pendingExportKind === 'preset' || pendingExportKind === 'cases') return 'json';
     const checked = document.querySelector('input[name="export-format"]:checked');
     return checked ? checked.value : 'readable';
 }
@@ -132,6 +148,9 @@ function currentExportText() {
     if (pendingExportKind === 'preset') {
         const preset = getPresets().find(p => p.id === pendingExportPresetId);
         return buildPresetJsonExport(preset ? [preset] : []);
+    }
+    if (pendingExportKind === 'cases') {
+        return buildCasesJsonExport(getCustomCases());
     }
     const trial = getSavedTrials().find(t => t.id === pendingExportTrialId);
     const trials = trial ? [trial] : [];
@@ -162,6 +181,16 @@ export function openPresetExportDialog(presetId) {
     pendingExportKind = 'preset';
     pendingExportPresetId = presetId;
     document.getElementById('export-dialog-title').textContent = 'Export "' + preset.name + '"';
+    document.getElementById('export-dialog-desc').textContent = 'Download it as a JSON file, or copy it to your clipboard.';
+    document.getElementById('export-format-toggle').classList.add('hidden');
+    setExportStatus('');
+    document.getElementById('export-dialog-overlay').classList.remove('hidden');
+}
+
+export function openCustomCasesExportDialog() {
+    pendingExportKind = 'cases';
+    pendingExportPresetId = null;
+    document.getElementById('export-dialog-title').textContent = 'Export Custom Cases';
     document.getElementById('export-dialog-desc').textContent = 'Download it as a JSON file, or copy it to your clipboard.';
     document.getElementById('export-format-toggle').classList.add('hidden');
     setExportStatus('');
@@ -214,11 +243,19 @@ document.getElementById('export-copy-btn').addEventListener('click', async () =>
 
 document.getElementById('export-download-btn').addEventListener('click', async () => {
     const format = currentExportFormat();
+    const stamp = new Date().toISOString().slice(0, 10);
+
+    if (pendingExportKind === 'cases') {
+        const blob = new Blob([currentExportText()], { type: 'application/json' });
+        downloadBlob(blob, 'bailiff-custom-cases-' + stamp + '.json');
+        setExportStatus('File downloaded.');
+        return;
+    }
+
     const isPreset = pendingExportKind === 'preset';
     const subject = isPreset
         ? getPresets().find(p => p.id === pendingExportPresetId)
         : getSavedTrials().find(t => t.id === pendingExportTrialId);
-    const stamp = new Date().toISOString().slice(0, 10);
     const baseName = 'bailiff-' + (isPreset ? 'preset-' : '') + slugify(subject ? subject.name : (isPreset ? 'preset' : 'trial')) + '-' + stamp;
 
     if (format === 'image') {

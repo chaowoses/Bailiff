@@ -5,6 +5,18 @@
 // versions since their last visit.
 const CHANGELOG = [
     {
+        version: 'v3.3.0',
+        date: '08/14/26',
+        summary: 'Control which case names show up as placeholder suggestions.',
+        bullets: [
+            'New pencil icon next to "In the Matter Of" opens a Case Name Suggestions manager',
+            'Enable or disable individual famous cases, with a search box and Enable All / Disable All (scoped to whatever the search currently shows)',
+            'Add your own custom cases, remove them individually, or Clear All (with a confirmation prompt)',
+            'Import or export custom cases as JSON, via file or clipboard',
+            'If nothing\'s enabled and there are no custom cases, the fields fall back to plain "Plaintiff" / "Defense" placeholders'
+        ]
+    },
+    {
         version: 'v3.2.1',
         date: '08/14/26',
         summary: 'AMTA preset breaks Opening & Closing into segments.',

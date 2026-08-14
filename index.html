@@ -44,7 +44,12 @@
         <div class="section-divider"></div>
 
         <div class="matter">
-            <div class="matter-heading">IN THE MATTER OF:</div>
+            <div class="matter-heading-row">
+                <div class="matter-heading">IN THE MATTER OF:</div>
+                <button type="button" class="case-library-btn" id="case-library-btn" title="Manage case name suggestions" aria-label="Manage case name suggestions">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" /><path d="M13.5 6.5l4 4" /></svg>
+                </button>
+            </div>
             <div class="parties">
                 <div class="party-row">
                     <div class="party">
@@ -196,23 +201,6 @@
         </div>
     </div>
 
-    <!-- Delete Confirmation Dialog -->
-    <div class="confirm-overlay hidden" id="delete-confirm-overlay">
-        <div class="confirm-dialog">
-            <div class="confirm-seal">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M4 7l16 0"/><path d="M10 11l0 6"/><path d="M14 11l0 6"/><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/>
-                </svg>
-            </div>
-            <h3 id="delete-confirm-title">Delete?</h3>
-            <p id="delete-confirm-text">This cannot be undone.</p>
-            <div class="confirm-actions">
-                <button class="confirm-btn confirm-cancel" id="delete-confirm-cancel">Cancel</button>
-                <button class="confirm-btn confirm-leave" id="delete-confirm-confirm">Delete</button>
-            </div>
-        </div>
-    </div>
-
     <!-- Description Edit Dialog -->
     <div class="confirm-overlay hidden" id="desc-edit-overlay">
         <div class="confirm-dialog preset-dialog">
@@ -231,6 +219,65 @@
             <div class="confirm-actions">
                 <button class="confirm-btn confirm-cancel" id="desc-edit-cancel">Cancel</button>
                 <button class="confirm-btn confirm-save" id="desc-edit-save">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Case Library Dialog -->
+    <div class="confirm-overlay hidden" id="case-library-overlay">
+        <div class="confirm-dialog preset-dialog case-library-dialog">
+            <h3>Case Name Suggestions</h3>
+            <p>Manage which case names appear as placeholder text for the Plaintiff / Defense fields above.</p>
+
+            <div class="case-lib-section">
+                <div class="case-lib-section-header">
+                    <span class="case-lib-section-title">Famous Cases</span>
+                    <div class="case-lib-section-actions">
+                        <button type="button" class="case-lib-btn" id="famous-cases-enable-all">Enable All</button>
+                        <button type="button" class="case-lib-btn" id="famous-cases-disable-all">Disable All</button>
+                    </div>
+                </div>
+                <input type="text" class="case-lib-search" id="famous-cases-search" placeholder="Search famous cases…" autocomplete="off">
+                <div class="case-lib-list" id="famous-cases-list"></div>
+            </div>
+
+            <div class="case-lib-section">
+                <div class="case-lib-section-header">
+                    <span class="case-lib-section-title">Custom Cases</span>
+                    <div class="case-lib-section-actions">
+                        <button type="button" class="case-lib-btn" id="custom-cases-import-btn">Import</button>
+                        <button type="button" class="case-lib-btn" id="custom-cases-export-btn">Export</button>
+                        <button type="button" class="case-lib-btn case-lib-btn-danger" id="custom-cases-clear-all">Clear All</button>
+                    </div>
+                </div>
+                <div class="case-lib-list" id="custom-cases-list"></div>
+                <div class="case-lib-add-row">
+                    <input type="text" id="custom-case-p-input" placeholder="Plaintiff, e.g. Brown" autocomplete="off">
+                    <span class="case-lib-add-vs">v.</span>
+                    <input type="text" id="custom-case-d-input" placeholder="Defense, e.g. Board of Education" autocomplete="off">
+                    <button type="button" class="case-lib-btn case-lib-btn-add" id="custom-case-add-btn">+ Add</button>
+                </div>
+            </div>
+
+            <div class="confirm-actions">
+                <button class="confirm-btn confirm-cancel" id="case-library-close">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Dialog -->
+    <div class="confirm-overlay hidden" id="delete-confirm-overlay">
+        <div class="confirm-dialog">
+            <div class="confirm-seal">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 7l16 0"/><path d="M10 11l0 6"/><path d="M14 11l0 6"/><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"/><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"/>
+                </svg>
+            </div>
+            <h3 id="delete-confirm-title">Delete?</h3>
+            <p id="delete-confirm-text">This cannot be undone.</p>
+            <div class="confirm-actions">
+                <button class="confirm-btn confirm-cancel" id="delete-confirm-cancel">Cancel</button>
+                <button class="confirm-btn confirm-leave" id="delete-confirm-confirm">Delete</button>
             </div>
         </div>
     </div>
