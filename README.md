@@ -55,7 +55,7 @@ Save block configurations as reusable presets with a name and description. Comes
 <details>
 <summary><b>Reload Resilience</b></summary>
 
-Timer and setup state survive an accidental page reload via sessionStorage — you won't lose your place mid-round.
+Timer and setup state survive an accidental page reload via sessionStorage so you won't lose your place mid-round.
 </details>
 
 <details>
@@ -83,7 +83,7 @@ Timed Ruling Mode is a setup-screen toggle that changes how pausing a block beha
 - **Overrule**: the elapsed pause time is deducted from the *linked block on the opposing side* instead, and the current speaker's time is left untouched. Use this when the objection is overruled, effectively costing the objecting side their own time.
 - **Resume**: always available, deducts nothing from anywhere, and simply continues the clock. This is the only option available when Timed Ruling Mode is off, or when a block has no link configured (Overrule won't appear without a valid link).
 
-**Example:** Cross-Examination is linked to Direct-Examination. During Cross, the questioner is paused. If the objection is *sustained*, time comes off Cross-Examination's own clock. If it's *overruled*, time comes off Direct-Examination's clock instead — because a good, valid objection during cross shouldn't cost the cross-examiner time.
+**Example:** Cross-Examination is linked to Direct-Examination. During Cross, the questioner is paused. If the objection is *sustained*, time comes off Cross-Examination's own clock. If it's *overruled*, time comes off Direct-Examination's clock instead.
 
 Linked blocks are marked with a small scales icon in setup, and with a link icon plus a highlight on the opposing team's live timer widget while the paired block is active, so both sides can see the connection during a round.
 
@@ -91,7 +91,7 @@ Linked blocks are marked with a small scales icon in setup, and with a link icon
 
 **v1.0.0** was tested to timekeep at the DC Regional on 1/25/2026 and performed reliably under live competition conditions.
 
-**v2.x** contains many improvements, but has not yet been tested in a live round.
+Future versions contain many improvements, but have not yet been tested in a live round.
 
 ## License
 
