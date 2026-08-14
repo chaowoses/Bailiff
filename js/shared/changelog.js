@@ -5,6 +5,17 @@
 // versions since their last visit.
 const CHANGELOG = [
     {
+        version: 'v3.1.0',
+        date: '08/13/26',
+        summary: 'Round out witnesses and presets.',
+        bullets: [
+            'The VLRE preset now includes witnesses for Cross Examination too, mirrored from Direct, and loads by default when you start a new setup',
+            'Renaming a witness now offers to rename same-named witnesses elsewhere (like their Cross Examination counterpart), showing which block each one is in',
+            'Allocated Time now warns before starting a trial if a block\'s Plaintiff and Defense witness totals don\'t match, so neither side gets shortchanged',
+            'Export a custom preset through the same dialog trials use. Copy it to your clipboard or download it as a file'
+        ]
+    },
+    {
         version: 'v3.0.0',
         date: '08/12/26',
         summary: 'Give a block witnesses.',
