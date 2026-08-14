@@ -10,20 +10,33 @@ import { showDeleteConfirm } from './dialogs.js';
 import { openPresetExportDialog } from './export.js';
 
 // ===== CONSTANTS =====
+// Cross Examination's witnesses mirror Direct Examination's, side-flipped
+// and cross-linked (id 11-16 <-> id 5-10) — same adversarial pairing the
+// Copy Witnesses "opposing" mode produces, see witness-copy.js.
 const DEFAULT_BLOCKS = [
     { id: 1, name: "Opening Statement", time: "05:00", linked: null },
     {
         id: 2, name: "Direct Examination", time: "25:00", linked: null,
         witnesses: [
-            { id: 5, name: "Plaintiff Witness 1", time: "05:00", linked: null, side: "left" },
-            { id: 6, name: "Plaintiff Witness 2", time: "05:00", linked: null, side: "left" },
-            { id: 7, name: "Plaintiff Witness 3", time: "05:00", linked: null, side: "left" },
-            { id: 8, name: "Defense Witness 1", time: "05:00", linked: null, side: "right" },
-            { id: 9, name: "Defense Witness 2", time: "05:00", linked: null, side: "right" },
-            { id: 10, name: "Defense Witness 3", time: "05:00", linked: null, side: "right" }
+            { id: 5, name: "Plaintiff Witness 1", time: "05:00", linked: 11, side: "left" },
+            { id: 6, name: "Plaintiff Witness 2", time: "05:00", linked: 12, side: "left" },
+            { id: 7, name: "Plaintiff Witness 3", time: "05:00", linked: 13, side: "left" },
+            { id: 8, name: "Defense Witness 1", time: "05:00", linked: 14, side: "right" },
+            { id: 9, name: "Defense Witness 2", time: "05:00", linked: 15, side: "right" },
+            { id: 10, name: "Defense Witness 3", time: "05:00", linked: 16, side: "right" }
         ]
     },
-    { id: 3, name: "Cross Examination", time: "20:00", linked: null },
+    {
+        id: 3, name: "Cross Examination", time: "20:00", linked: null,
+        witnesses: [
+            { id: 11, name: "Plaintiff Witness 1", time: "05:00", linked: 5, side: "right" },
+            { id: 12, name: "Plaintiff Witness 2", time: "05:00", linked: 6, side: "right" },
+            { id: 13, name: "Plaintiff Witness 3", time: "05:00", linked: 7, side: "right" },
+            { id: 14, name: "Defense Witness 1", time: "05:00", linked: 8, side: "left" },
+            { id: 15, name: "Defense Witness 2", time: "05:00", linked: 9, side: "left" },
+            { id: 16, name: "Defense Witness 3", time: "05:00", linked: 10, side: "left" }
+        ]
+    },
     { id: 4, name: "Closing Argument", time: "05:00", linked: null }
 ];
 

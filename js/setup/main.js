@@ -3,7 +3,7 @@ import { pNameInput, dNameInput, timedRulingToggle } from './dom.js';
 import { state, restoreSetupSession, clearSetupSession } from './state.js';
 import { updateLinkVisibility, renderBlocks } from './blocks.js';
 import { renderSavedTrials } from './saved-trials.js';
-import { renderPresets } from './presets.js';
+import { renderPresets, loadPreset } from './presets.js';
 import { FAMOUS_CASES } from './cases.js';
 
 // witness-copy.js and import.js wire up their own DOM event listeners at
@@ -85,12 +85,18 @@ function setPlaceholderCase() {
     dNameInput.placeholder = randomCase.d;
 }
 
-restoreSetupSession();
-document.querySelectorAll('#witness-mode-toggle .witness-mode-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.mode === state.globalWitnessMode);
-});
-updateLinkVisibility();
-renderBlocks();
+// No saved in-progress session (first visit, or after starting/clearing a
+// trial) means there's nothing to restore — default to the VLRE preset
+// instead of leaving the bare state.js scaffold blocks in place.
+if (restoreSetupSession()) {
+    document.querySelectorAll('#witness-mode-toggle .witness-mode-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.mode === state.globalWitnessMode);
+    });
+    updateLinkVisibility();
+    renderBlocks();
+} else {
+    loadPreset('preset-vlre');
+}
 renderSavedTrials();
 renderPresets();
 setPlaceholderCase();
