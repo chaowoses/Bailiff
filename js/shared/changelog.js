@@ -1,113 +1,14 @@
 // ===== CHANGELOG =====
-// Add a new entry to the START of this list whenever BAILIFF_VERSION is
-// bumped. Only the newest entry (index 0) is ever shown to a returning user
-// (via the "What's New" popup below) — even if they skipped several
-// versions since their last visit.
-const CHANGELOG = [
-    {
-        version: 'v3.3.0',
-        date: '08/14/26',
-        summary: 'Control which case names show up as placeholder suggestions.',
-        bullets: [
-            'New pencil icon next to "In the Matter Of" opens a Case Name Suggestions manager',
-            'Enable or disable individual famous cases, with a search box and Enable All / Disable All (scoped to whatever the search currently shows)',
-            'Add your own custom cases, remove them individually, or Clear All (with a confirmation prompt)',
-            'Import or export custom cases as JSON, via file or clipboard',
-            'If nothing\'s enabled and there are no custom cases, the fields fall back to plain "Plaintiff" / "Defense" placeholders'
-        ]
-    },
-    {
-        version: 'v3.2.1',
-        date: '08/14/26',
-        summary: 'AMTA preset breaks Opening & Closing into segments.',
-        bullets: [
-            'The AMTA preset\'s Opening & Closing block now has individual segments per side (Opening Statement, Closing Argument, and Closing Rebuttal for Plaintiff) instead of one shared timer'
-        ]
-    },
-    {
-        version: 'v3.2.0',
-        date: '08/14/26',
-        summary: 'Track the trial clock, not just the block clocks.',
-        bullets: [
-            'New Trial Clock bar at the bottom of the timer page shows the current time and elapsed time since the trial started',
-            'Set the start time once (defaults to now, editable in the moment). after confirming, it locks in for the rest of the trial',
-            'Elapsed time turns red past 180 minutes, the AMTA all-loss-time threshold',
-            'Start time is saved with the session, so it survives autosave recovery and resuming a saved trial',
-            'New built-in AMTA preset, alongside VLRE'
-        ]
-    },
-    {
-        version: 'v3.1.2',
-        date: '08/13/26',
-        summary: 'Fix manual time controls not syncing the block total.',
-        bullets: [
-            'Adjusting a witness\'s time with the manual controls (+15/+30/-15/-30, custom Add/Set/Sub, Reset) now updates the block\'s real total right away, instead of only catching up once the clock ticks or a ruling deducts from it',
-            'In Total Time mode, granting time to a witness now actually adds to the case\'s real time remaining instead of just changing how much that witness appears to have used.',
-            'A hint now explains why the elapsed number above moves the opposite way'
-        ]
-    },
-    {
-        version: 'v3.1.1',
-        date: '08/13/26',
-        summary: 'Next Block now follows actual trial order.',
-        bullets: [
-            'Next Block used to run through one side\'s whole schedule before moving to the other. It now alternates sides at each step, including witness by witness within a block (Plaintiff Witness 1, Defense Witness 1, Plaintiff Witness 2...), before moving down to the next section, matching how a trial actually runs'
-        ]
-    },
-    {
-        version: 'v3.1.0',
-        date: '08/13/26',
-        summary: 'Round out witnesses and presets.',
-        bullets: [
-            'The VLRE preset now includes witnesses for Cross Examination too, mirrored from Direct, and loads by default when you start a new setup',
-            'Renaming a witness now offers to rename same-named witnesses elsewhere (like their Cross Examination counterpart), showing which block each one is in',
-            'Allocated Time now warns before starting a trial if a block\'s Plaintiff and Defense witness totals don\'t match, so neither side gets shortchanged',
-            'Export a custom preset through the same dialog trials use. Copy it to your clipboard or download it as a file'
-        ]
-    },
-    {
-        version: 'v3.0.0',
-        date: '08/12/26',
-        summary: 'Give a block witnesses.',
-        bullets: [
-            'Blocks like Direct and Cross can now have witnesses, each with its own timer',
-            'Choose Allocated Time (each witness gets a set countdown) or Stopwatch (open-ended, just tracks elapsed) per block',
-            'Copy a block\'s witnesses into another block, handy for mirroring Direct\'s witness list onto Cross',
-            'The block itself always keeps its own real total, shown as a collapsible header above its witnesses on the timer page'
-        ]
-    },
-    {
-        version: 'v2.6.0',
-        date: '08/12/26',
-        summary: 'See how long each section actually ran.',
-        bullets: [
-            'Stopped blocks on the timer page now show an "Elapsed" time alongside the remaining/total display',
-            'Elapsed time turns red if a section ran past its allotted time'
-        ]
-    },
-    {
-        version: 'v2.5.0',
-        date: '08/12/26',
-        summary: 'Turn a saved trial into a shareable image.',
-        bullets: [
-            'New "Image" export format alongside Plain Text and JSON: a docket-style poster with the schedule and progress',
-            'Copy the image straight to your clipboard, or download it as a PNG'
-        ]
-    },
-    {
-        version: 'v2.4.0',
-        date: '08/12/26',
-        summary: 'Take your saved trials with you.',
-        bullets: [
-            'Export any saved trial as a readable summary or a JSON file',
-            'Copy an export to your clipboard, or download it as a file',
-            "Import trials from a JSON file: drag & drop it in, browse for it, or paste it directly"
-        ]
-    }
-];
-
-const BAILIFF_VERSION = CHANGELOG[0].version;
+// Entries live in ./changelog.json, newest first. Add a new entry to the
+// START of that list whenever the version is bumped. Only the newest entry
+// (index 0) is ever shown to a returning user (via the "What's New" popup
+// below) — even if they skipped several versions since their last visit.
 const LAST_SEEN_VERSION_KEY = 'bailiff_last_seen_version';
+
+async function loadChangelog() {
+    const res = await fetch(new URL('./changelog.json', import.meta.url));
+    return res.json();
+}
 
 function buildChangelogOverlay(entry) {
     const style = document.createElement('style');
@@ -167,21 +68,29 @@ function buildChangelogOverlay(entry) {
     overlay.classList.remove('hidden');
 }
 
-function maybeShowChangelog() {
-    const latest = CHANGELOG[0];
-    if (!latest || latest.version !== BAILIFF_VERSION) return;
+function maybeShowChangelog(latest, version) {
+    if (!latest) return;
 
     try {
         const lastSeen = localStorage.getItem(LAST_SEEN_VERSION_KEY);
-        localStorage.setItem(LAST_SEEN_VERSION_KEY, BAILIFF_VERSION);
+        localStorage.setItem(LAST_SEEN_VERSION_KEY, version);
         // First-ever visit, or already seen this version — stay quiet.
-        if (lastSeen === null || lastSeen === BAILIFF_VERSION) return;
+        if (lastSeen === null || lastSeen === version) return;
         buildChangelogOverlay(latest);
     } catch {}
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    let changelog;
+    try {
+        changelog = await loadChangelog();
+    } catch {
+        changelog = [];
+    }
+    const latest = changelog[0];
+    const version = latest ? latest.version : '';
+
     const el = document.getElementById('version-footer');
-    if (el) el.textContent = BAILIFF_VERSION;
-    maybeShowChangelog();
+    if (el) el.textContent = version;
+    maybeShowChangelog(latest, version);
 });
