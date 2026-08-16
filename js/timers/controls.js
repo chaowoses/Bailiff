@@ -1,4 +1,4 @@
-import { parseTime, formatTime } from '../shared/time.js';
+import { parseTime, formatTime, formatTimeMs } from '../shared/time.js';
 import {
     countdown, currentBlockName, timeLabel, secondaryTimer, startBtn, stopBtn, nextBtn,
     resetBtn, add15Btn, add30Btn, sub15Btn, sub30Btn, customTimeInput, addCustomBtn, setCustomBtn, subCustomBtn, clearCustomBtn,
@@ -14,6 +14,32 @@ import { startAutosave, stopAutosave } from './save-progress.js';
 import { renderWidgets } from './widgets.js';
 // See ruling.js for why this circular import (controls.js <-> ruling.js) is safe.
 import { showPauseButtons } from './ruling.js';
+
+// Drives the main countdown display's millisecond precision independently
+// of the once-a-second timeRemaining/pauseElapsed state — `getValue` reads
+// an anchor (timestamp + value at that timestamp) and interpolates via
+// performance.now() so the display is smooth between whole-second ticks.
+function startMsTicker(getValue) {
+    clearInterval(state.msDisplayInterval);
+    state.msDisplayInterval = setInterval(() => {
+        countdown.textContent = formatTimeMs(getValue());
+    }, 33);
+}
+
+function stopMsTicker() {
+    clearInterval(state.msDisplayInterval);
+    state.msDisplayInterval = null;
+}
+
+// For a manual, mid-run adjustment (buttons/reset/custom input) to
+// timeRemaining outside the live tick: resync the ms anchor so a running
+// ticker keeps counting smoothly from the new value, and paint the display
+// immediately in case nothing is running to pick it up.
+function resyncMsDisplay() {
+    state.msAnchorTime = performance.now();
+    state.msAnchorValue = state.timeRemaining;
+    countdown.textContent = formatTimeMs(state.timeRemaining);
+}
 
 export function updateCountdownColor() {
     countdown.classList.remove('warning', 'critical', 'paused', 'overtime');
@@ -51,9 +77,10 @@ export function loadBlock() {
     state.timeRemaining = getEntityValue(entity, stopwatch);
     if (!stopwatch && entity.remainingSeconds === null) entity.remainingSeconds = state.timeRemaining;
 
+    stopMsTicker();
     const witnessSuffix = hasWitnesses ? ` — ${entity.name}` : '';
     currentBlockName.textContent = `${state.currentTeam === 'left' ? state.leftTeamName : state.rightTeamName} - ${block.name}${witnessSuffix}`;
-    countdown.textContent = formatTime(state.timeRemaining);
+    countdown.textContent = formatTimeMs(state.timeRemaining);
     updateCountdownColor();
     timeLabel.textContent = stopwatch ? 'Elapsed Time' : 'Time Remaining';
     secondaryTimer.classList.remove('visible');
@@ -96,6 +123,13 @@ export function startTimer() {
     updateCountdownColor();
     startAutosave();
 
+    state.msAnchorTime = performance.now();
+    state.msAnchorValue = state.timeRemaining;
+    startMsTicker(() => {
+        const elapsed = (performance.now() - state.msAnchorTime) / 1000;
+        return isCurrentStopwatch() ? state.msAnchorValue + elapsed : state.msAnchorValue - elapsed;
+    });
+
     state.timerInterval = setInterval(() => {
         const entity = getCurrentTimeable();
         const stopwatch = isCurrentStopwatch();
@@ -114,7 +148,10 @@ export function startTimer() {
             block.remainingSeconds = getBlockRemaining(block) - 1;
         }
 
-        countdown.textContent = formatTime(state.timeRemaining);
+        // Resync the ms anchor to this whole-second tick so the smooth
+        // display never drifts from the real timeRemaining it's derived from.
+        state.msAnchorTime = performance.now();
+        state.msAnchorValue = state.timeRemaining;
         updateCountdownColor();
         renderWidgets();
     }, 1000);
@@ -130,7 +167,6 @@ export function pauseTimer() {
     state.originalTimeBeforePause = state.timeRemaining;
     state.pauseElapsed = 0;
 
-    countdown.textContent = '00:00';
     countdown.classList.remove('warning', 'critical', 'overtime');
     countdown.classList.add('paused');
     timeLabel.textContent = 'Time Paused';
@@ -142,9 +178,14 @@ export function pauseTimer() {
 
     showPauseButtons();
 
+    // The countdown display keeps its ms precision here too — it just counts
+    // up from zero instead of down while paused.
+    state.msAnchorTime = performance.now();
+    state.msAnchorValue = 0;
+    startMsTicker(() => (performance.now() - state.msAnchorTime) / 1000);
+
     state.pauseInterval = setInterval(() => {
         state.pauseElapsed++;
-        countdown.textContent = formatTime(state.pauseElapsed);
     }, 1000);
     saveTimerSession();
 }
@@ -157,7 +198,8 @@ export function resumeTimer() {
     const pauseButtons = document.querySelectorAll('.pause-btn');
     pauseButtons.forEach(btn => btn.remove());
 
-    countdown.textContent = formatTime(state.timeRemaining);
+    stopMsTicker();
+    countdown.textContent = formatTimeMs(state.timeRemaining);
     updateCountdownColor();
     timeLabel.textContent = 'Time Remaining';
     secondaryTimer.classList.remove('visible');
@@ -182,6 +224,9 @@ export function stopTimerButton() {
         clearInterval(state.timerInterval);
         state.isRunning = false;
     }
+
+    stopMsTicker();
+    countdown.textContent = formatTimeMs(state.timeRemaining);
 
     state.isStopped = true;
 
@@ -210,6 +255,7 @@ export function fullStop() {
 
     clearInterval(state.timerInterval);
     clearInterval(state.pauseInterval);
+    stopMsTicker();
     state.isRunning = false;
     state.isPaused = false;
     state.isStopped = false;
@@ -311,7 +357,7 @@ export function adjustTime(seconds) {
             state.originalTimeBeforePause = state.timeRemaining;
             secondaryTimer.textContent = formatTime(state.originalTimeBeforePause);
         } else {
-            countdown.textContent = formatTime(state.timeRemaining);
+            resyncMsDisplay();
             updateCountdownColor();
         }
 
@@ -353,7 +399,7 @@ resetBtn.addEventListener('click', () => {
             state.originalTimeBeforePause = state.timeRemaining;
             secondaryTimer.textContent = formatTime(state.originalTimeBeforePause);
         } else {
-            countdown.textContent = formatTime(state.timeRemaining);
+            resyncMsDisplay();
             updateCountdownColor();
         }
 
@@ -398,7 +444,7 @@ setCustomBtn.addEventListener('click', () => {
             state.originalTimeBeforePause = state.timeRemaining;
             secondaryTimer.textContent = formatTime(state.originalTimeBeforePause);
         } else {
-            countdown.textContent = formatTime(state.timeRemaining);
+            resyncMsDisplay();
             updateCountdownColor();
         }
 

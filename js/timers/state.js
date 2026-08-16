@@ -154,6 +154,13 @@ export const state = {
     pauseElapsed,
     timerInterval: null,
     pauseInterval: null,
+    // Drive the smooth millisecond countdown/pause display (see
+    // controls.js's startMsTicker) — purely visual, never persisted, and
+    // independent of the whole-second timeRemaining/pauseElapsed state that
+    // all the real deduction/ruling logic runs on.
+    msDisplayInterval: null,
+    msAnchorTime: 0,
+    msAnchorValue: 0,
     sessionId
 };
 
