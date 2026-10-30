@@ -87,6 +87,16 @@ function validateAndParseImport(text) {
             const err = validateBlocksShape('Entry ' + (i + 1), t.blocks);
             if (err) return { error: err };
         }
+        // The timer page trusts the timeline's shape, so drop any entries
+        // that aren't usable rather than letting a hand-edited file break it.
+        if (t.timerState && t.timerState.timeline !== undefined) {
+            if (!Array.isArray(t.timerState.timeline)) {
+                return { error: 'Entry ' + (i + 1) + ' has an invalid "timeline" field.' };
+            }
+            t.timerState.timeline = t.timerState.timeline.filter(ev =>
+                ev && typeof ev === 'object' && typeof ev.id === 'string' &&
+                ['start', 'pause', 'stop', 'flag'].includes(ev.type) && Number.isFinite(ev.at));
+        }
         trials.push(t);
     }
 

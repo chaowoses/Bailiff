@@ -70,7 +70,7 @@ export function resumeWithDeduction() {
             block.remainingSeconds = getBlockRemaining(block) - state.pauseElapsed;
         }
     }
-    resumeTimer();
+    resumeTimer('Sustained — deducted');
 }
 
 export function resumeWithLinkedDeduction() {
@@ -111,7 +111,7 @@ export function resumeWithLinkedDeduction() {
         const entity = getCurrentTimeable();
         if (entity) entity.remainingSeconds = state.timeRemaining;
     }
-    resumeTimer();
+    resumeTimer(linked ? `Overruled — deducted from ${resolveLinkedDeductionTarget(linked).name}` : 'Overruled');
 }
 
 export function resumeWithoutDeduction() {

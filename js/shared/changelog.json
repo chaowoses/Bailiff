@@ -1,5 +1,23 @@
 [
     {
+        "version": "v4.0.0",
+        "date": "10/30/26",
+        "summary": "Major update: a new Timeline tab for logging everything that happens in a round.",
+        "bullets": [
+            "New Timeline tab on the timer page (switch between Timer and Timeline at the top). The timer keeps running while you're on it, and the current block and clock stay visible",
+            "Every start, pause and stop is logged automatically, with the time of day, trial time since the start time (once set), and the timer reading",
+            "Each pause is a single entry showing how long it lasted and how it ended: resumed, sustained (deducted) or overruled (deducted from the linked block)",
+            "Drop a flag at any moment without pausing, from the bench or the Timeline tab, with an optional quick note. Flags can be deleted",
+            "Add or edit a note on any entry, such as \"hearsay objection\" on a pause or flag",
+            "Entries are grouped under mini headings showing the side, team, block and witness. Sort oldest first or newest first, and hide flags with one checkbox",
+            "A filter menu lets you view just one side (all Plaintiff or all Defense), a whole block, or a single witness, with entry counts. On small screens it collapses behind a Filter button",
+            "The timeline is saved with the trial, autosave and page reloads, and is included in JSON and text exports and imports",
+            "New built-in preset: 2026 LHS Intramurals (VLRE with a 21:00 direct and 15:00 cross)",
+            "Fixed: stopping or pausing the timer no longer rounds the main countdown to the last whole second; it keeps the exact time",
+            "Fixed: the main button says Start, not Restart, for a block or witness that was never stopped (including after a reload or when moving to the next block)"
+        ]
+    },
+    {
         "version": "v3.4.0",
         "date": "08/16/26",
         "summary": "Main countdown now shows milliseconds.",

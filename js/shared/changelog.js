@@ -13,10 +13,24 @@ async function loadChangelog() {
 function buildChangelogOverlay(entry) {
     const style = document.createElement('style');
     style.textContent = `
+        /* Long entries scroll inside the dialog instead of running off the screen. */
+        #changelog-overlay .confirm-dialog {
+            display: flex;
+            flex-direction: column;
+            max-height: 88vh;
+        }
+        #changelog-overlay .confirm-dialog > * {
+            flex-shrink: 0;
+        }
         #changelog-overlay .changelog-list {
+            flex: 1 1 auto;
+            flex-shrink: 1;
+            min-height: 0;
+            overflow-y: auto;
             text-align: left;
             margin: 0 0 24px 0;
             padding-left: 20px;
+            padding-right: 8px;
             display: flex;
             flex-direction: column;
             gap: 8px;

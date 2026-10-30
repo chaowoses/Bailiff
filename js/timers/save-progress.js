@@ -22,7 +22,8 @@ export function startAutosave() {
                 blocks: state.blocks,
                 currentBlockId: state.currentBlockId,
                 currentTeam: state.currentTeam,
-                startTime: state.startTime
+                startTime: state.startTime,
+                timeline: state.timeline
             }
         };
         localStorage.setItem('bailiff_autosave', JSON.stringify(autosave));
@@ -83,7 +84,8 @@ document.getElementById('confirm-save-exit').addEventListener('click', () => {
             currentBlockId: state.currentBlockId,
             currentTeam: state.currentTeam,
             currentWitnessId: state.currentWitnessId,
-            startTime: state.startTime
+            startTime: state.startTime,
+            timeline: state.timeline
         }
     };
     if (existingIdx !== -1) {

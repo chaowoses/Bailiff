@@ -58,6 +58,41 @@ const VLRE_PRESET = {
     blocks: JSON.parse(JSON.stringify(DEFAULT_BLOCKS))
 };
 
+// VLRE's schedule with shorter examinations and its own witnesses: Direct
+// 21:00 (7:00 per witness), Cross 15:00 (5:00 per witness); Opening and
+// Closing stay at 5:00. Cross keeps mirroring Direct, so renaming a VLRE
+// witness here renames both of their rows.
+const LHS_INTRAMURALS_WITNESSES = {
+    "Devan Rice": "Greer Prasad",
+    "Shawn Sonti": "Bailey Gummadi",
+    "Presley Kurthi": "Riley Carter",
+    "Dakota Saravana": "Jordan Marlow",
+    "Justice Marlow": "Avery Reibel",
+    "Kendall Rose": "Jamie Turner"
+};
+const LHS_INTRAMURALS_BLOCKS = JSON.parse(JSON.stringify(DEFAULT_BLOCKS));
+LHS_INTRAMURALS_BLOCKS.forEach(b => {
+    const examTime = { 2: ['21:00', '07:00'], 3: ['15:00', '05:00'] }[b.id];
+    if (!examTime) return;
+    b.time = examTime[0];
+    b.witnesses.forEach(w => {
+        w.time = examTime[1];
+        w.name = LHS_INTRAMURALS_WITNESSES[w.name];
+    });
+});
+
+const LHS_INTRAMURALS_PRESET = {
+    id: 'preset-lhs-intramurals-2026',
+    name: '2026 LHS Intramurals',
+    description: 'For the 2026 LHS Intramurals. Same as VLRE with shorter direct (21:00) and cross (15:00).',
+    savedAt: null,
+    builtin: true,
+    advancedMode: false,
+    timedRulingMode: false,
+    witnessMode: 'stopwatch',
+    blocks: LHS_INTRAMURALS_BLOCKS
+};
+
 // Same reasoning as DEFAULT_BLOCKS above: unlinked, Total Time mode, blocks
 // carry the real budget while witnesses just count up.
 const AMTA_BLOCKS = [
@@ -110,7 +145,7 @@ const AMTA_PRESET = {
 
 // ===== PRESETS =====
 export function getPresets() {
-    const presets = [VLRE_PRESET, AMTA_PRESET];
+    const presets = [VLRE_PRESET, LHS_INTRAMURALS_PRESET, AMTA_PRESET];
     try {
         const saved = JSON.parse(localStorage.getItem(PRESETS_KEY)) || [];
         saved.forEach(p => presets.push(p));

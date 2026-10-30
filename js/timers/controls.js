@@ -10,6 +10,7 @@ import {
 } from './engine.js';
 import { setMobileView } from './mobile-view.js';
 import { startAutosave, stopAutosave } from './save-progress.js';
+import { logEvent, closePause } from './timeline.js';
 // See widgets.js for why this circular import (controls.js <-> widgets.js) is safe.
 import { renderWidgets } from './widgets.js';
 // See ruling.js for why this circular import (controls.js <-> ruling.js) is safe.
@@ -39,6 +40,24 @@ function resyncMsDisplay() {
     state.msAnchorTime = performance.now();
     state.msAnchorValue = state.timeRemaining;
     countdown.textContent = formatTimeMs(state.timeRemaining);
+}
+
+// While running, state.timeRemaining only moves on whole-second ticks, so
+// the smooth ms display is ahead of it by the fraction of a second since the
+// last tick. Fold that fraction back in when the clock halts (pause/stop),
+// otherwise the display snaps back to the last whole second.
+function snapToMs() {
+    if (!state.isRunning) return;
+    const entity = getCurrentTimeable();
+    if (!entity) return;
+    const elapsed = Math.min((performance.now() - state.msAnchorTime) / 1000, 1);
+    const stopwatch = isCurrentStopwatch();
+    state.timeRemaining = Math.round((stopwatch ? state.timeRemaining + elapsed : state.timeRemaining - elapsed) * 1000) / 1000;
+    setEntityValue(entity, stopwatch, state.timeRemaining);
+    const block = getCurrentParentBlock();
+    if (block && block.witnesses && block.witnesses.length) {
+        block.remainingSeconds = Math.round((getBlockRemaining(block) - elapsed) * 1000) / 1000;
+    }
 }
 
 export function updateCountdownColor() {
@@ -94,6 +113,9 @@ export function loadBlock() {
         : '';
 
     startBtn.style.display = 'inline-block';
+    // Per-entity: a different block/witness (or a fresh page load) that was
+    // never stopped is a plain Start, not a Restart.
+    state.isStopped = !!entity.stopped;
     startBtn.textContent = state.isStopped ? 'Restart' : 'Start';
     startBtn.className = 'bench-btn bench-btn-primary';
     stopBtn.style.display = 'none';
@@ -107,7 +129,9 @@ export function loadBlock() {
     setMobileView(state.currentTeam);
 }
 
-export function startTimer() {
+// `isResume` is set when this is the tail end of a pause (see resumeTimer),
+// which closes that pause's timeline section instead of logging a new start.
+export function startTimer(isResume) {
     if (state.isRunning) return;
     state.isRunning = true;
     state.isPaused = false;
@@ -122,6 +146,7 @@ export function startTimer() {
     timeLabel.textContent = stopwatch ? 'Elapsed Time' : 'Time Remaining';
     updateCountdownColor();
     startAutosave();
+    if (!isResume) logEvent('start');
 
     state.msAnchorTime = performance.now();
     state.msAnchorValue = state.timeRemaining;
@@ -160,12 +185,14 @@ export function startTimer() {
 
 export function pauseTimer() {
     if (!state.isRunning || state.isPaused) return;
+    snapToMs();
     state.isPaused = true;
     state.isRunning = false;
     clearInterval(state.timerInterval);
 
     state.originalTimeBeforePause = state.timeRemaining;
     state.pauseElapsed = 0;
+    logEvent('pause');
 
     countdown.classList.remove('warning', 'critical', 'overtime');
     countdown.classList.add('paused');
@@ -190,8 +217,10 @@ export function pauseTimer() {
     saveTimerSession();
 }
 
-export function resumeTimer() {
+// `ruling` is how the pause ended, shown on its timeline entry.
+export function resumeTimer(ruling) {
     clearInterval(state.pauseInterval);
+    closePause(ruling || 'Resumed');
     state.isPaused = false;
     state.pauseElapsed = 0;
 
@@ -207,7 +236,7 @@ export function resumeTimer() {
     stopBtn.style.display = 'inline-block';
 
     renderWidgets();
-    startTimer();
+    startTimer(true);
 }
 
 export function stopTimerButton() {
@@ -216,11 +245,13 @@ export function stopTimerButton() {
     if (state.isPaused) {
         clearInterval(state.pauseInterval);
         state.isPaused = false;
+        closePause('Stopped');
         const pauseButtons = document.querySelectorAll('.pause-btn');
         pauseButtons.forEach(btn => btn.remove());
     }
 
     if (state.isRunning) {
+        snapToMs();
         clearInterval(state.timerInterval);
         state.isRunning = false;
     }
@@ -232,6 +263,7 @@ export function stopTimerButton() {
 
     const entity = getCurrentTimeable();
     if (entity) entity.stopped = true;
+    logEvent('stop');
 
     timeLabel.textContent = 'Stopped';
     secondaryTimer.classList.remove('visible');
@@ -251,6 +283,8 @@ export function fullStop() {
     if (state.isRunning || state.isPaused) {
         const entity = getCurrentTimeable();
         if (entity) entity.stopped = true;
+        closePause('Stopped');
+        logEvent('stop');
     }
 
     clearInterval(state.timerInterval);
@@ -393,6 +427,10 @@ resetBtn.addEventListener('click', () => {
         // is the grant (see adjustTime).
         adjustSuperblock(stopwatch ? previous - state.timeRemaining : state.timeRemaining - previous);
         entity.stopped = false;
+        if (!state.isRunning && !state.isPaused) {
+            state.isStopped = false;
+            startBtn.textContent = 'Start';
+        }
 
         // Update originalTimeBeforePause if paused
         if (state.isPaused) {

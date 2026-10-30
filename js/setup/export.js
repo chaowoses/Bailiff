@@ -92,6 +92,25 @@ function buildReadableExport(trials) {
             });
         }
 
+        const timeline = t.timerState && Array.isArray(t.timerState.timeline) ? t.timerState.timeline : [];
+        if (timeline.length > 0) {
+            lines.push('   Timeline:');
+            const typeLabels = { start: 'Started', pause: 'Paused', stop: 'Stopped', flag: 'Flag' };
+            timeline.forEach(ev => {
+                const time = new Date(ev.at).toLocaleTimeString();
+                const side = ev.team === 'left' ? (t.plaintiff || 'Plaintiff') : ev.team === 'right' ? (t.defense || 'Defense') : '';
+                const context = [side, ev.blockName, ev.witnessName].filter(Boolean).join(' — ');
+                let line = '     - ' + time + '  ' + (typeLabels[ev.type] || ev.type);
+                if (ev.type === 'pause' && ev.endedAt != null) {
+                    line += ' (' + formatTrialTime(Math.floor((ev.endedAt - ev.at) / 1000)) + ', ' + (ev.ruling || 'Resumed') + ')';
+                }
+                if (typeof ev.clock === 'number') line += ' [timer ' + formatTrialTime(Math.round(ev.clock)) + ']';
+                if (context) line += ' — ' + context;
+                lines.push(line);
+                if (ev.note) lines.push('         Note: ' + ev.note);
+            });
+        }
+
         lines.push('-'.repeat(40));
         lines.push("Exported from Bailiff Mock Trial Timer.");
         lines.push("https://chaowoses.dev/Bailiff")

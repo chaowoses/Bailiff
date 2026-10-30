@@ -52,6 +52,19 @@ Start, pause, stop, and restart each block. Quick +15s/+30s and -15s/-30s adjust
 </details>
 
 <details>
+<summary><b>Timeline</b></summary>
+
+A separate **Timeline** tab (next to Timer at the top of the timer page) is a running log of the round. The timer keeps running while you're on it, and a bar at the top keeps the current block and clock in view.
+
+- **Automatic events.** Every start, pause and stop is logged with the time of day, the trial time since the start time (once set), and the timer reading. A pause is one entry showing how long it lasted and how it ended (resumed, sustained, or overruled).
+- **Flags.** Drop a flag at any moment without pausing, from the bench or the Timeline tab, with an optional quick note. Flags can be deleted.
+- **Notes.** Add or edit a note on any entry, e.g. "hearsay objection" on a pause or flag.
+- **Layout.** Entries sit under mini headings showing side, team, block and witness. Sort oldest first or newest first, and hide flags with the Show flags checkbox.
+- **Filtering.** A menu beside the list filters to a whole side (all Plaintiff or all Defense), a whole block, or a single witness, with a count on each. On small screens it collapses behind a Filter button.
+- **Saved with the trial.** The timeline is kept through page reloads, autosave, Save & Exit and resuming, and it's included in JSON and text exports and imports.
+</details>
+
+<details>
 <summary><b>Trial Clock</b></summary>
 
 A bar at the bottom of the timer page shows the current time and the time elapsed since the trial started. Set the start time once (defaults to now, editable); it locks in after you confirm. Elapsed time turns red past 180 minutes, the AMTA all-loss-time threshold. The start time is saved with the session and with saved trials.
@@ -72,13 +85,13 @@ Save progress mid-round and resume later. Autosaves every 30 seconds during a tr
 <details>
 <summary><b>Presets</b></summary>
 
-Save block configurations (including witnesses) as reusable presets with a name and description. Comes with built-in VLRE and AMTA presets (the VLRE preset, including mirrored Cross Examination witnesses, loads by default; the AMTA preset splits Opening & Closing into per-side segments). Drag-and-drop to reorder your custom presets, and export a preset to your clipboard or a file.
+Save block configurations (including witnesses) as reusable presets with a name and description. Comes with built-in VLRE, 2026 LHS Intramurals and AMTA presets (the VLRE preset, including mirrored Cross Examination witnesses, loads by default; the LHS Intramurals preset is VLRE with a 21:00 direct and 15:00 cross; the AMTA preset splits Opening & Closing into per-side segments). Drag-and-drop to reorder your custom presets, and export a preset to your clipboard or a file.
 </details>
 
 <details>
 <summary><b>Import & Export</b></summary>
 
-Export any saved trial as a plain-text summary, a JSON file, or a docket-style PNG image (copy to clipboard or download). Import trials or presets from JSON by drag & drop, file browse, or pasting.
+Export any saved trial as a plain-text summary, a JSON file, or a docket-style PNG image (copy to clipboard or download). Text and JSON exports include the trial's timeline; JSON imports restore it. Import trials or presets from JSON by drag & drop, file browse, or pasting.
 </details>
 
 <details>

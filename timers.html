@@ -39,6 +39,11 @@
             </div>
         </div>
 
+        <div class="view-tabs" id="view-tabs">
+            <button class="view-tab active" data-view="timer">Timer</button>
+            <button class="view-tab" data-view="timeline">Timeline</button>
+        </div>
+
         <div class="courtroom-body" id="courtroom-body">
             <div class="mobile-team-tabs" id="mobile-team-tabs">
                 <button class="team-tab active" id="tab-left" data-team="left">Plaintiff</button>
@@ -66,6 +71,11 @@
                         <button class="bench-btn bench-btn-primary" id="start-btn">Start</button>
                         <button class="bench-btn bench-btn-danger" id="stop-btn" style="display: none;">Stop</button>
                         <button class="bench-btn bench-btn-secondary" id="next-btn" style="display: none;">Next Block</button>
+                    </div>
+
+                    <div class="bench-flag-row">
+                        <input type="text" class="flag-note-input" id="flag-note-input" placeholder="Flag note (optional)" autocomplete="off">
+                        <button class="flag-btn" id="flag-btn" title="Drop a flag on the timeline without pausing">&#9873; Flag</button>
                     </div>
 
                     <div class="controls-divider"></div>
@@ -102,6 +112,30 @@
             <div class="counsel right">
                 <div class="counsel-label">Defense</div>
                 <div class="counsel-widgets" id="right-widgets"></div>
+            </div>
+        </div>
+
+        <div class="timeline-view" id="timeline-view">
+            <div class="timeline-bar">
+                <div class="timeline-now" id="timeline-now">
+                    <div class="timeline-now-block" id="timeline-now-block"></div>
+                    <div class="timeline-now-time" id="timeline-now-time"></div>
+                    <div class="timeline-now-label" id="timeline-now-label"></div>
+                </div>
+                <div class="timeline-tools">
+                    <span class="timeline-count" id="timeline-count"></span>
+                    <button type="button" class="tl-nav-toggle" id="timeline-nav-toggle">Filter</button>
+                    <label class="timeline-filter"><input type="checkbox" id="timeline-show-flags" checked> Show flags</label>
+                    <button type="button" class="tl-sort-btn" id="timeline-sort" title="Reverse the order of the timeline"></button>
+                    <div class="timeline-flag-row">
+                        <input type="text" class="flag-note-input" id="timeline-flag-input" placeholder="Flag note (optional)" autocomplete="off">
+                        <button class="flag-btn" id="timeline-flag-btn" title="Drop a flag without pausing">&#9873; Drop Flag</button>
+                    </div>
+                </div>
+            </div>
+            <div class="timeline-main">
+                <nav class="timeline-nav" id="timeline-nav" aria-label="Filter timeline by side, block or witness"></nav>
+                <ol class="timeline-list" id="timeline-list"></ol>
             </div>
         </div>
     </div>

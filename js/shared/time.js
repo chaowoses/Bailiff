@@ -5,7 +5,8 @@ export function parseTime(timeStr) {
 
 export function formatTime(seconds) {
     const isNegative = seconds < 0;
-    const absSeconds = Math.abs(seconds);
+    // Floored: a paused/stopped clock can hold a fractional second.
+    const absSeconds = Math.floor(Math.abs(seconds));
     const mins = Math.floor(absSeconds / 60);
     const secs = absSeconds % 60;
     return `${isNegative ? '-' : ''}${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;

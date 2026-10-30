@@ -38,6 +38,7 @@ export const resumeId = urlParams.get('resume');
 
 let leftTeamName, rightTeamName, timedRulingMode, witnessMode, blockTemplates, resumeBlocks;
 let startTime = null;
+let timeline = [];
 export let resumeState = null;
 
 if (resumeId) {
@@ -52,6 +53,7 @@ if (resumeId) {
         blockTemplates = resumeState.blocks;
         resumeBlocks = resumeState.timerState ? resumeState.timerState.blocks : null;
         startTime = resumeState.timerState ? (resumeState.timerState.startTime || null) : null;
+        timeline = (resumeState.timerState && Array.isArray(resumeState.timerState.timeline)) ? resumeState.timerState.timeline : [];
     } catch (e) {
         resumeState = null;
     }
@@ -137,11 +139,14 @@ if (savedSessionData) {
     pauseElapsed = savedSessionData.pauseElapsed;
     isStopped = true;
     startTime = savedSessionData.startTime || null;
+    timeline = savedSessionData.timeline || [];
 }
 
 export const state = {
     leftTeamName, rightTeamName, timedRulingMode, witnessMode, blockTemplates,
     blocks, currentBlockId, currentTeam, currentWitnessId, startTime,
+    // Event log + manual flags, see timeline.js.
+    timeline,
     // Which witness-bearing block widgets are manually expanded, keyed
     // "team:blockId". The block currently on the clock is always
     // force-expanded regardless of this set (see renderWidgets).
@@ -172,7 +177,8 @@ export function saveTimerSession() {
             blockTemplates: state.blockTemplates, blocks: state.blocks,
             currentBlockId: state.currentBlockId, currentTeam: state.currentTeam, currentWitnessId: state.currentWitnessId,
             timeRemaining: state.timeRemaining, originalTimeBeforePause: state.originalTimeBeforePause,
-            pauseElapsed: state.pauseElapsed, sessionId: state.sessionId, startTime: state.startTime
+            pauseElapsed: state.pauseElapsed, sessionId: state.sessionId, startTime: state.startTime,
+            timeline: state.timeline
         }));
     } catch {}
 }
