@@ -119,6 +119,9 @@ body {
     display: flex;
     flex: 1;
     overflow: hidden;
+    /* The fixed bottom bar overlays the page, so reserve room for it or the
+       bottom of the side panels and the Return to Atrium link are hidden. */
+    padding-bottom: 72px;
 }
 
 /* Team switcher shown only on the stacked mobile layout */
