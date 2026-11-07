@@ -1,4 +1,5 @@
 import { escapeHtml } from '../shared/dom-utils.js';
+import { formatTime } from '../shared/time.js';
 import { ICON_SCALES, ICON_INFO, ICON_WITNESS } from './icons.js';
 import { showDeleteConfirm } from './dialogs.js';
 import { openExportDialog } from './export.js';
@@ -141,10 +142,8 @@ export function renderSavedTrials() {
                     }
 
                     const isOvertime = secs < 0;
-                    const absSecs = Math.abs(secs);
-                    const mins = Math.floor(absSecs / 60);
-                    const secsDisplay = absSecs % 60;
-                    const timeStr = String(mins).padStart(2, '0') + ':' + String(secsDisplay).padStart(2, '0') + (isOvertime ? ' overtime' : '');
+                    // Saved clocks can hold a fractional second; formatTime floors it.
+                    const timeStr = formatTime(Math.abs(secs)) + (isOvertime ? ' overtime' : '');
                     const sideLabel = team === 'left' ? (t.plaintiff || 'Plaintiff') : (t.defense || 'Defense');
                     const entityLabel = witness ? (block.name + ': ' + witness.name) : block.name;
                     progressHtml = '<div class="saved-trial-progress' + (isOvertime ? ' saved-trial-progress--overtime' : '') + '">' + escapeHtml(sideLabel) + ' &mdash; ' + escapeHtml(entityLabel) + ' &middot; ' + timeStr + '</div>';

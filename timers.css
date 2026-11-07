@@ -38,6 +38,7 @@ body {
 
 /* ===== BENCH HEADER ===== */
 .bench-header {
+    position: relative;
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
@@ -69,6 +70,255 @@ body {
 .bench-atrium-link:hover {
     color: #c9a84c;
 }
+
+.overlay-icon-btn {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    padding: 6px;
+    background: none;
+    border: none;
+    color: #5a4a3a;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.overlay-icon-btn:hover { color: #c9a84c; }
+
+.confirm-dialog.overlay-settings-dialog {
+    max-width: 520px;
+    max-height: 88vh;
+    overflow-y: auto;
+    text-align: left;
+}
+
+.overlay-settings-dialog h3 { text-align: center; }
+
+.ovs-steps {
+    margin: 0 0 18px;
+    padding-left: 20px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.78rem;
+    line-height: 1.55;
+    color: #b0a190;
+}
+
+.ovs-steps li { margin-bottom: 6px; }
+.ovs-steps li::marker { color: #c9a84c; }
+.ovs-steps strong { color: #f0e8d8; }
+.ovs-steps a { color: #c9a84c; text-decoration: underline; text-underline-offset: 2px; }
+.ovs-steps a:hover { color: #f0e8d8; }
+
+.ovs-url-row { display: flex; gap: 8px; margin-bottom: 20px; }
+
+.ovs-url-row input {
+    flex: 1;
+    min-width: 0;
+    background: #1a1410;
+    color: #f0e8d8;
+    border: 1px solid #3a2a20;
+    border-radius: 4px;
+    padding: 8px 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+}
+
+.ovs-section {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #7a6a5a;
+    margin-bottom: 10px;
+}
+
+.ovs-grid {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px 16px;
+    align-items: center;
+    margin-bottom: 24px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.8rem;
+    color: #b0a190;
+}
+
+.ovs-color-ctl,
+.ovs-size-ctl {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-self: end;
+}
+
+.ovs-color-ctl label { display: flex; align-items: center; gap: 6px; }
+
+.ovs-hex {
+    min-width: 52px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: #7a6a5a;
+}
+
+.cp-button {
+    width: 40px;
+    height: 24px;
+    padding: 2px;
+    background: #1a1410;
+    border: 1px solid #3a2a20;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.cp-button:hover { border-color: #c9a84c; }
+.cp-button:disabled { opacity: 0.35; cursor: default; }
+.cp-button:disabled:hover { border-color: #3a2a20; }
+
+.cp-chip {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 3px;
+}
+
+.cp-pop {
+    position: fixed;
+    z-index: 1100;
+    width: 196px;
+    padding: 12px;
+    background: #221c16;
+    border: 1px solid #3a2a20;
+    border-radius: 6px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+}
+
+.cp-pop[hidden] { display: none; }
+
+.cp-sv,
+.cp-hue {
+    position: relative;
+    touch-action: none;
+    cursor: crosshair;
+    border-radius: 4px;
+}
+
+.cp-sv {
+    height: 120px;
+    margin-bottom: 12px;
+    background:
+        linear-gradient(to top, #000, transparent),
+        linear-gradient(to right, #fff, var(--cp-hue, #f00));
+}
+
+.cp-hue {
+    height: 12px;
+    margin-bottom: 12px;
+    border-radius: 6px;
+    background: linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00);
+}
+
+.cp-thumb {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    margin: -6px 0 0 -6px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+}
+
+.cp-hue .cp-thumb { top: 50%; }
+
+.cp-hex-input {
+    box-sizing: border-box;
+    width: 100%;
+    margin-bottom: 12px;
+    padding: 6px 8px;
+    background: #1a1410;
+    color: #f0e8d8;
+    border: 1px solid #3a2a20;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+}
+
+.cp-hex-input:focus { outline: none; border-color: #c9a84c; }
+
+.cp-presets { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+
+.cp-preset {
+    height: 20px;
+    padding: 0;
+    border: 1px solid #3a2a20;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.cp-preset:hover { border-color: #c9a84c; }
+
+.ovs-grid input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 150px;
+    height: 4px;
+    background: #3a2a20;
+    border-radius: 2px;
+    outline: none;
+}
+
+.ovs-grid input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #c9a84c;
+    border: none;
+    cursor: pointer;
+}
+
+.ovs-grid input[type="range"]::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #c9a84c;
+    border: none;
+    cursor: pointer;
+}
+
+.ovs-grid input[type="checkbox"] { accent-color: #c9a84c; }
+
+.ovs-grid input[type="checkbox"] {
+    -webkit-appearance: none;
+    appearance: none;
+    flex-shrink: 0;
+    width: 14px;
+    height: 14px;
+    margin: 0;
+    background: #1a1410;
+    border: 1px solid #3a2a20;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.ovs-grid input[type="checkbox"]:hover { border-color: #c9a84c; }
+
+.ovs-grid input[type="checkbox"]:checked {
+    background: #c9a84c url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 6.2l2.4 2.4 4.6-5' fill='none' stroke='%231a1410' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 100% no-repeat;
+    border-color: #c9a84c;
+}
+
+.ovs-toggle-label { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+
+/* Pause timer off: its size slider is irrelevant. */
+.ovs-secondary-off .ovs-size-ctl:last-of-type { opacity: 0.4; }
 
 .bench-party-info {
     text-align: center;

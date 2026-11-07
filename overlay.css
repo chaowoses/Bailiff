@@ -1,0 +1,100 @@
+/* OBS Browser Source overlay. Fonts match the timer page (timers.css); default colors are lighter so they read over video.
+   Transparent by default; overlay.js applies the colors chosen in the timer page's
+   OBS Overlay dialog, and scales the content to fill the source's size. */
+:root {
+    --c-block: #f0e8d8;
+    --c-time: #e3bd57;
+    --c-warning: #f59e0b;
+    --c-critical: #ff5252;
+    --c-paused: #bfa56a;
+    --c-label: #d8cdb8;
+    --c-secondary: #d8cdb8;
+    /* Text size multipliers, set from the dialog's size sliders. */
+    --z-block: 1;
+    --z-time: 1;
+    --z-label: 1;
+    --z-secondary: 1;
+}
+
+html, body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    overflow: hidden;
+}
+
+body {
+    position: relative;
+}
+
+[hidden] { display: none !important; }
+
+.overlay {
+    /* Pinned to the top edge and centered across; overlay.js sets the scale that fits it. */
+    position: absolute;
+    left: 50%;
+    top: 0;
+    transform: translateX(-50%);
+    transform-origin: 50% 0;
+    white-space: nowrap;
+    /* Dark shadow so the light text stays readable over video. */
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6), 0 0 2px rgba(0, 0, 0, 0.5);
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0;
+    text-align: center;
+}
+
+.ov-block {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: calc(1rem * var(--z-block));
+    font-weight: 600;
+    color: var(--c-block);
+    margin-bottom: 16px;
+}
+
+.ov-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: calc(8rem * var(--z-time));
+    font-weight: 700;
+    line-height: 1;
+    color: var(--c-time);
+    margin-bottom: 8px;
+    transition: color 0.3s;
+}
+
+.ov-time.warning { color: var(--c-warning); }
+.ov-time.paused { color: var(--c-paused); }
+.ov-time.critical,
+.ov-time.overtime {
+    color: var(--c-critical);
+    animation: ov-pulse 1.2s ease-in-out infinite;
+}
+
+.ov-label {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: calc(0.8rem * var(--z-label));
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--c-label);
+}
+
+.ov-secondary {
+    margin-top: 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: calc(1.5rem * var(--z-secondary));
+    font-weight: 600;
+    color: var(--c-secondary);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.ov-secondary.visible { opacity: 1; }
+
+@keyframes ov-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.65; transform: scale(1.03); }
+}

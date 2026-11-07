@@ -3,6 +3,8 @@ import { state, savedSessionData, resumeId, resumeState, saveTimerSession } from
 import { loadBlock, selectBlock } from './controls.js';
 import { initMobileTabLabels } from './mobile-view.js';
 import './trial-clock.js';
+import './overlay-settings.js';
+import './overlay-broadcast.js';
 
 // Set team names
 document.getElementById('left-team-name').textContent = state.leftTeamName;

@@ -1,5 +1,16 @@
 [
     {
+        "version": "v4.1.0",
+        "date": "11/06/26",
+        "summary": "New OBS overlay for showing the timer on a recording.",
+        "bullets": [
+            "New overlay page (overlay.html) shows the current block and countdown, with the same fonts as the timer page and light default colors that read over video, and follows the timer live. Add it to OBS as a Browser Source",
+            "Click the OBS icon at the right of the top bar for setup instructions, a Copy URL button, and a size slider and color picker for each part of the overlay (block name, countdown and its warning states, labels, background)",
+            "Run the timer page in an OBS Custom Browser Dock so the overlay can receive it. Both must load from the same web address",
+            "The overlay has a transparent background by default, and scales to fill whatever size you give the OBS source, cropped to the top and bottom of its text"
+        ]
+    },
+    {
         "version": "v4.0.0",
         "date": "10/30/26",
         "summary": "Major update: a new Timeline tab for logging everything that happens in a round.",
